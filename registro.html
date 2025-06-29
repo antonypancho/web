@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Registro de Compras</title>
+<style>
+  body {
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+  h1 {
+    margin-bottom: 15px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 40px;
+  }
+  th, td {
+    border: 1px solid #555;
+    padding: 8px;
+    text-align: left;
+  }
+  th {
+    background: #222;
+  }
+  caption {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+  }
+  button {
+    background-color: #ff4444;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: background-color 0.3s ease;
+  }
+  button:hover {
+    background-color: #cc0000;
+  }
+</style>
+</head>
+<body>
+
+<h1>Registro de Cartones Comprados</h1>
+
+<button id="btnBorrar">Borrar todos los registros</button>
+
+<table id="tablaCartones">
+  <caption>Cartón - Nombre</caption>
+  <thead>
+    <tr><th>Cartón</th><th>Nombre</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<h1>Registro de Pagos</h1>
+<table id="tablaPagos">
+  <caption>Monto - Referencia</caption>
+  <thead>
+    <tr><th>Monto (BS)</th><th>Referencia</th></tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLzH0JmBW6Bkm4",
+    authDomain: "bingomagic.firebaseapp.com",
+    projectId: "bingomagic",
+    storageBucket: "bingomagic.appspot.com",
+    messagingSenderId: "239927101364",
+    appId: "1:239927101364:web:7557e068b2564c63a194e1",
+    measurementId: "G-0GJL6DJCEB"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const tablaCartonesBody = document.querySelector('#tablaCartones tbody');
+  const tablaPagosBody = document.querySelector('#tablaPagos tbody');
+  const btnBorrar = document.getElementById('btnBorrar');
+
+  async function cargarRegistros() {
+    tablaCartonesBody.innerHTML = '';
+    tablaPagosBody.innerHTML = '';
+
+    // Cargar cartones vendidos (documentos de la colección "cartonesVendidos")
+    const cartonesSnapshot = await getDocs(collection(db, "cartonesVendidos"));
+    // Creamos un objeto para ordenar los cartones por número
+    let registros = {};
+    cartonesSnapshot.forEach(docSnap => {
+      registros[docSnap.id] = docSnap.data().nombre || "";
+    });
+    // Ordenar cartones
+    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+    for (const c of cartonesOrdenados) {
+      const tr = document.createElement('tr');
+      const tdCarton = document.createElement('td');
+      tdCarton.textContent = c;
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = registros[c];
+      tr.appendChild(tdCarton);
+      tr.appendChild(tdNombre);
+      tablaCartonesBody.appendChild(tr);
+    }
+
+    // Cargar pagos (documentos de la colección "pagos")
+    const pagosSnapshot = await getDocs(collection(db, "pagos"));
+    pagosSnapshot.forEach(docSnap => {
+      const p = docSnap.data();
+      const tr = document.createElement('tr');
+      const tdMonto = document.createElement('td');
+      tdMonto.textContent = p.monto || '';
+      const tdReferencia = document.createElement('td');
+      tdReferencia.textContent = p.referencia || '';
+      tr.appendChild(tdMonto);
+      tr.appendChild(tdReferencia);
+      tablaPagosBody.appendChild(tr);
+    });
+  }
+
+  async function borrarRegistros() {
+    if(!confirm("¿Estás seguro que quieres borrar todos los registros?")) return;
+
+    // Borrar todos los documentos en "cartonesVendidos"
+    const cartonesSnapshot = await getDocs(collection(db, "cartonesVendidos"));
+    const pagosSnapshot = await getDocs(collection(db, "pagos"));
+
+    const borrarPromises = [];
+    cartonesSnapshot.forEach(docSnap => {
+      borrarPromises.push(deleteDoc(doc(db, "cartonesVendidos", docSnap.id)));
+    });
+    pagosSnapshot.forEach(docSnap => {
+      borrarPromises.push(deleteDoc(doc(db, "pagos", docSnap.id)));
+    });
+
+    await Promise.all(borrarPromises);
+    alert("Registros borrados correctamente.");
+    cargarRegistros();
+  }
+
+  btnBorrar.addEventListener('click', borrarRegistros);
+
+  cargarRegistros();
+</script>
+
+</body>
+</html>
