@@ -81,6 +81,7 @@
       display: grid;
       grid-template-columns: repeat(30, 1fr);
       gap: 6px;
+      max-width: none;
       margin-left: auto;
       margin-right: auto;
       background-color: white;
@@ -107,15 +108,12 @@
       color: #2196f3;
       background-color: transparent;
     }
-
-    .carton-btn.vendido {
-      color: white !important;
-      background-color: white !important;
-      cursor: default;
-      pointer-events: none;
-      border: none;
-    }
   </style>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
 </head>
 <body>
 
@@ -143,6 +141,23 @@
 <div id="panel-cartones"></div>
 
 <script>
+  // Tu configuración Firebase, reemplaza con la tuya
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
+    authDomain: "bingomagic.firebaseapp.com",
+    projectId: "bingomagic",
+    storageBucket: "bingomagic.firebasestorage.app",
+    messagingSenderId: "239927101364",
+    appId: "1:239927101364:web:7557e068b2564c63a194e1",
+    measurementId: "G-0GJL6DJCEB"
+  };
+
+  // Inicializar Firebase
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
+
+  const db = firebase.firestore();
+
   const PRECIO_CARTON = 100;
   const panel = document.getElementById('panel-cartones');
   const seleccionadosInput = document.getElementById('cartonesSeleccionados');
@@ -151,7 +166,21 @@
   let seleccionados = new Set();
   let vendidos = new Set();
 
-  let registros = JSON.parse(localStorage.getItem('registrosCartones')) || {};
+  // Cargar cartones vendidos de Firestore y bloquearlos
+  async function cargarVendidos() {
+    try {
+      const snapshot = await db.collection('compras').get();
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if(data.cartones && Array.isArray(data.cartones)){
+          data.cartones.forEach(n => vendidos.add(n));
+        }
+      });
+      bloquearVendidos();
+    } catch(e) {
+      console.error("Error cargando vendidos: ", e);
+    }
+  }
 
   // Crear botones para 530 cartones
   for (let i = 1; i <= 530; i++) {
@@ -160,12 +189,6 @@
     btn.className = 'carton-btn';
     btn.textContent = i;
     btn.dataset.numero = i;
-
-    if (registros[i]) {
-      vendidos.add(i);
-      btn.classList.add('vendido');
-    }
-
     btn.addEventListener('click', () => {
       if (vendidos.has(i)) return;
       if (seleccionados.has(i)) {
@@ -177,8 +200,19 @@
       }
       actualizarCampos();
     });
-
     panel.appendChild(btn);
+  }
+
+  function bloquearVendidos() {
+    vendidos.forEach(n => {
+      const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
+      if (btn) {
+        btn.style.color = '#121212';  // texto casi invisible (fondo blanco)
+        btn.style.backgroundColor = 'transparent';
+        btn.disabled = true;
+        btn.classList.remove('selected');
+      }
+    });
   }
 
   function actualizarCampos() {
@@ -206,7 +240,6 @@
       alert("Por favor selecciona al menos un cartón.");
       return;
     }
-
     const nombre = form.nombre.value.trim();
     const referencia = form.referencia.value.trim();
     if (!nombre || !referencia) {
@@ -214,32 +247,40 @@
       return;
     }
 
-    alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a, b) => a - b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
+    const cartonesArray = Array.from(seleccionados).sort((a, b) => a - b);
+    const monto = cartonesArray.length * PRECIO_CARTON;
 
-    registros = JSON.parse(localStorage.getItem('registrosCartones')) || {};
-    let pagos = JSON.parse(localStorage.getItem('registrosPagos')) || [];
+    db.collection('compras').add({
+      nombre: nombre,
+      cartones: cartonesArray,
+      referencia: referencia,
+      monto: monto,
+      fecha: new Date()
+    }).then(() => {
+      alert("Compra guardada en Firebase correctamente.");
 
-    seleccionados.forEach(n => {
-      registros[n] = nombre;
-      vendidos.add(n);
-      const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
-      if (btn) {
-        btn.classList.add('vendido');
-      }
+      // Bloquear cartones vendidos
+      cartonesArray.forEach(n => {
+        vendidos.add(n);
+        const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
+        if (btn) {
+          btn.style.color = '#121212';
+          btn.style.backgroundColor = 'transparent';
+          btn.disabled = true;
+          btn.classList.remove('selected');
+        }
+      });
+
+      form.reset();
+      seleccionados.clear();
+      actualizarCampos();
+    }).catch(error => {
+      alert("Error guardando la compra: " + error);
     });
-
-    pagos.push({
-      monto: montoInput.value,
-      referencia: referencia
-    });
-
-    localStorage.setItem('registrosCartones', JSON.stringify(registros));
-    localStorage.setItem('registrosPagos', JSON.stringify(pagos));
-
-    form.reset();
-    seleccionados.clear();
-    actualizarCampos();
   });
+
+  // Carga inicial de cartones vendidos
+  cargarVendidos();
 </script>
 
 </body>
