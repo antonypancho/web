@@ -69,9 +69,108 @@
   }
 </style>
 
-<!-- Firebase SDKs -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // Firebase config (igual que en index.html)
+  const firebaseConfig = {
+    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
+    authDomain: "bingomagic.firebaseapp.com",
+    projectId: "bingomagic",
+    storageBucket: "bingomagic.firebasestorage.app",
+    messagingSenderId: "239927101364",
+    appId: "1:239927101364:web:7557e068b2564c63a194e1",
+    measurementId: "G-0GJL6DJCEB"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+
+  async function cargarRegistros() {
+    // Cargar registrosCartones
+    try {
+      const snapshotCartones = await db.collection('registrosCartones').get();
+      const registros = {};
+      snapshotCartones.forEach(doc => {
+        registros[doc.id] = doc.data().nombre;
+      });
+
+      // Ordenar cartones
+      const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+
+      // Mostrar en tablaCartones
+      const tbodyCartones = document.querySelector('#tablaCartones tbody');
+      tbodyCartones.innerHTML = '';
+      for (const c of cartonesOrdenados) {
+        const tr = document.createElement('tr');
+        const tdCarton = document.createElement('td');
+        tdCarton.textContent = c;
+        const tdNombre = document.createElement('td');
+        tdNombre.textContent = registros[c];
+        tr.appendChild(tdCarton);
+        tr.appendChild(tdNombre);
+        tbodyCartones.appendChild(tr);
+      }
+    } catch (error) {
+      console.error("Error cargando registrosCartones:", error);
+    }
+
+    // Cargar registrosPagos
+    try {
+      const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
+      const pagos = [];
+      snapshotPagos.forEach(doc => {
+        pagos.push(doc.data());
+      });
+
+      // Mostrar pagos
+      const tbodyPagos = document.querySelector('#tablaPagos tbody');
+      tbodyPagos.innerHTML = '';
+      pagos.forEach(p => {
+        const tr = document.createElement('tr');
+        const tdMonto = document.createElement('td');
+        tdMonto.textContent = p.monto;
+        const tdReferencia = document.createElement('td');
+        tdReferencia.textContent = p.referencia;
+        tr.appendChild(tdMonto);
+        tr.appendChild(tdReferencia);
+        tbodyPagos.appendChild(tr);
+      });
+    } catch (error) {
+      console.error("Error cargando registrosPagos:", error);
+    }
+  }
+
+  async function borrarRegistros() {
+    if (!confirm("¿Estás seguro que quieres borrar todos los registros?")) return;
+
+    try {
+      // Borrar documentos de registrosCartones
+      const snapshotCartones = await db.collection('registrosCartones').get();
+      const batch = db.batch();
+      snapshotCartones.forEach(doc => batch.delete(doc.ref));
+      // Borrar documentos de registrosPagos
+      const snapshotPagos = await db.collection('registrosPagos').get();
+      snapshotPagos.forEach(doc => batch.delete(doc.ref));
+
+      await batch.commit();
+      cargarRegistros();
+      alert("Todos los registros fueron borrados.");
+    } catch (error) {
+      console.error("Error borrando registros:", error);
+      alert("Error al borrar registros.");
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarRegistros();
+
+    document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
+  });
+</script>
+
 </head>
 <body>
 
@@ -98,87 +197,6 @@
   </thead>
   <tbody></tbody>
 </table>
-
-<script>
-  // Configuración Firebase (usa la misma que en index.html)
-  const firebaseConfig = {
-    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
-    authDomain: "bingomagic.firebaseapp.com",
-    projectId: "bingomagic",
-    storageBucket: "bingomagic.firebasestorage.app",
-    messagingSenderId: "239927101364",
-    appId: "1:239927101364:web:7557e068b2564c63a194e1",
-    measurementId: "G-0GJL6DJCEB"
-  };
-
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
-  async function cargarRegistros() {
-    const tbodyCartones = document.querySelector('#tablaCartones tbody');
-    tbodyCartones.innerHTML = '';
-    const tbodyPagos = document.querySelector('#tablaPagos tbody');
-    tbodyPagos.innerHTML = '';
-
-    // Cargar registrosCartones
-    const registrosSnapshot = await db.collection("registrosCartones").get();
-    let registros = {};
-    registrosSnapshot.forEach(doc => {
-      registros[doc.id] = doc.data().nombre;
-    });
-
-    // Ordenar cartones por número y mostrar
-    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
-    for (const c of cartonesOrdenados) {
-      const tr = document.createElement('tr');
-      const tdCarton = document.createElement('td');
-      tdCarton.textContent = c;
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = registros[c];
-      tr.appendChild(tdCarton);
-      tr.appendChild(tdNombre);
-      tbodyCartones.appendChild(tr);
-    }
-
-    // Cargar registrosPagos
-    const pagosSnapshot = await db.collection("registrosPagos").get();
-    pagosSnapshot.forEach(doc => {
-      const p = doc.data();
-      const tr = document.createElement('tr');
-      const tdMonto = document.createElement('td');
-      tdMonto.textContent = p.monto;
-      const tdReferencia = document.createElement('td');
-      tdReferencia.textContent = p.referencia;
-      tr.appendChild(tdMonto);
-      tr.appendChild(tdReferencia);
-      tbodyPagos.appendChild(tr);
-    });
-  }
-
-  async function borrarRegistros() {
-    // Borrar documentos de registrosCartones
-    const registrosSnapshot = await db.collection("registrosCartones").get();
-    const batch = db.batch();
-    registrosSnapshot.forEach(doc => batch.delete(doc.ref));
-
-    // Borrar documentos de registrosPagos
-    const pagosSnapshot = await db.collection("registrosPagos").get();
-    pagosSnapshot.forEach(doc => batch.delete(doc.ref));
-
-    await batch.commit();
-    cargarRegistros();
-  }
-
-  document.getElementById('btnBorrar').addEventListener('click', () => {
-    if(confirm("¿Estás seguro que quieres borrar todos los registros?")) {
-      borrarRegistros();
-    }
-  });
-
-  // Cargar registros al iniciar
-  cargarRegistros();
-</script>
 
 </body>
 </html>
