@@ -1,152 +1,126 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registro de Compras</title>
-<style>
-  body {
-    background: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    margin: 20px;
-  }
-  header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  h1 {
-    margin: 0;
-  }
-  button.volver-btn {
-    background-color: #2196f3;
-    border: none;
-    color: white;
-    font-weight: bold;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-  }
-  button.volver-btn:hover {
-    background-color: #0b7dda;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
-  }
-  th, td {
-    border: 1px solid #555;
-    padding: 8px;
-    text-align: left;
-  }
-  th {
-    background: #222;
-  }
-  caption {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-  button.borrar-btn {
-    background-color: #ff4444;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 30px;
-    transition: background-color 0.3s ease;
-  }
-  button.borrar-btn:hover {
-    background-color: #cc0000;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Registro de Compras</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: white;
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      color: black;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+      text-align: center;
+      font-weight: bold;
+    }
+    th {
+      background-color: #2196f3;
+      color: white;
+    }
+    tr:hover {
+      background-color: #f1f1f1;
+    }
+    button.volver-btn {
+      margin-bottom: 20px;
+      background-color: #2196f3;
+      border: none;
+      color: white;
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button.volver-btn:hover {
+      background-color: #0b7dda;
+    }
+  </style>
+
+  <!-- Firebase CDN -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-analytics-compat.js"></script>
 </head>
 <body>
 
-<header>
-  <h1>Registro de Cartones Comprados</h1>
-  <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
-</header>
+  <button class="volver-btn" onclick="window.location.href='index.html'">← Volver a Compra</button>
+  <h1>Registro de Compras</h1>
 
-<button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+  <table id="tabla-compras">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Cartones</th>
+        <th>Referencia</th>
+        <th>Monto (Bs)</th>
+        <th>Fecha</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Aquí se agregan las filas -->
+    </tbody>
+  </table>
 
-<table id="tablaCartones">
-  <caption>Cartón - Nombre</caption>
-  <thead>
-    <tr><th>Cartón</th><th>Nombre</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
+  <script>
+    // Copia tu configuración firebase aquí igual que en index.html
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
+      authDomain: "bingomagic.firebaseapp.com",
+      projectId: "bingomagic",
+      storageBucket: "bingomagic.firebasestorage.app",
+      messagingSenderId: "239927101364",
+      appId: "1:239927101364:web:7557e068b2564c63a194e1",
+      measurementId: "G-0GJL6DJCEB"
+    };
 
-<h1>Registro de Pagos</h1>
-<table id="tablaPagos">
-  <caption>Monto - Referencia</caption>
-  <thead>
-    <tr><th>Monto (BS)</th><th>Referencia</th></tr>
-  </thead>
-  <tbody></tbody>
-</table>
+    firebase.initializeApp(firebaseConfig);
+    firebase.analytics();
 
-<script>
-  function cargarRegistros() {
-    let registros = JSON.parse(localStorage.getItem('registrosCartones')) || {};
-    let pagos = JSON.parse(localStorage.getItem('registrosPagos')) || [];
+    const db = firebase.firestore();
+    const tabla = document.getElementById('tabla-compras').querySelector('tbody');
 
-    // Ordenar cartones por número
-    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+    async function cargarCompras() {
+      try {
+        const snapshot = await db.collection('compras').orderBy('fecha', 'desc').get();
+        tabla.innerHTML = ''; // limpiar tabla
 
-    // Mostrar cartones y nombres
-    const tbodyCartones = document.querySelector('#tablaCartones tbody');
-    tbodyCartones.innerHTML = '';
-    for (const c of cartonesOrdenados) {
-      const tr = document.createElement('tr');
-      const tdCarton = document.createElement('td');
-      tdCarton.textContent = c;
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = registros[c];
-      tr.appendChild(tdCarton);
-      tr.appendChild(tdNombre);
-      tbodyCartones.appendChild(tr);
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const fila = document.createElement('tr');
+
+          const fecha = data.fecha ? data.fecha.toDate().toLocaleString() : '';
+
+          fila.innerHTML = `
+            <td>${data.nombre || ''}</td>
+            <td>${(data.cartones && data.cartones.join(', ')) || ''}</td>
+            <td>${data.referencia || ''}</td>
+            <td>${data.monto || ''}</td>
+            <td>${fecha}</td>
+          `;
+          tabla.appendChild(fila);
+        });
+      } catch (e) {
+        alert('Error al cargar las compras: ' + e);
+      }
     }
 
-    // Mostrar pagos
-    const tbodyPagos = document.querySelector('#tablaPagos tbody');
-    tbodyPagos.innerHTML = '';
-    pagos.forEach(p => {
-      const tr = document.createElement('tr');
-      const tdMonto = document.createElement('td');
-      tdMonto.textContent = p.monto;
-      const tdReferencia = document.createElement('td');
-      tdReferencia.textContent = p.referencia;
-      tr.appendChild(tdMonto);
-      tr.appendChild(tdReferencia);
-      tbodyPagos.appendChild(tr);
-    });
-  }
-
-  function borrarRegistros() {
-    localStorage.removeItem('registrosCartones');
-    localStorage.removeItem('registrosPagos');
-    cargarRegistros();
-  }
-
-  document.getElementById('btnBorrar').addEventListener('click', () => {
-    if(confirm("¿Estás seguro que quieres borrar todos los registros?")) {
-      borrarRegistros();
-    }
-  });
-
-  // Cargar registros al iniciar
-  cargarRegistros();
-</script>
+    cargarCompras();
+  </script>
 
 </body>
 </html>
