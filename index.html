@@ -4,145 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Compra de Cartones de Bingo</title>
-  <script type="module">
-    // Importar Firebase SDK (Módulos ES6 desde CDN)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, updateDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
-      authDomain: "bingomagic.firebaseapp.com",
-      projectId: "bingomagic",
-      storageBucket: "bingomagic.appspot.com",
-      messagingSenderId: "239927101364",
-      appId: "1:239927101364:web:7557e068b2564c63a194e1",
-      measurementId: "G-0GJL6DJCEB"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const PRECIO_CARTON = 100;
-    const panel = document.getElementById('panel-cartones');
-    const seleccionadosInput = document.getElementById('cartonesSeleccionados');
-    const montoInput = document.getElementById('monto');
-    const form = document.getElementById('compraForm');
-
-    let seleccionados = new Set();
-    let vendidos = new Set();
-
-    // Obtener cartones ya comprados desde Firestore
-    async function cargarVendidos() {
-      const snapshot = await getDocs(collection(db, "cartonesVendidos"));
-      snapshot.forEach(docSnap => {
-        vendidos.add(Number(docSnap.id));
-        const btn = panel.querySelector(`button[data-numero="${docSnap.id}"]`);
-        if (btn) {
-          btn.disabled = true;
-          btn.style.backgroundColor = "#121212";
-          btn.style.color = "#121212";
-        }
-      });
-    }
-
-    // Crear botones
-    for (let i = 1; i <= 530; i++) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'carton-btn';
-      btn.textContent = i;
-      btn.dataset.numero = i;
-      btn.addEventListener('click', () => {
-        const n = Number(btn.dataset.numero);
-        if (vendidos.has(n)) return;
-        if (seleccionados.has(n)) {
-          seleccionados.delete(n);
-          btn.classList.remove('selected');
-        } else {
-          seleccionados.add(n);
-          btn.classList.add('selected');
-        }
-        actualizarCampos();
-      });
-      panel.appendChild(btn);
-    }
-
-    await cargarVendidos();
-
-    function actualizarCampos() {
-      const lista = Array.from(seleccionados).sort((a, b) => a - b);
-      seleccionadosInput.value = lista.join(', ');
-      montoInput.value = (lista.length * PRECIO_CARTON).toString();
-    }
-
-    seleccionadosInput.addEventListener('input', () => {
-      const valores = seleccionadosInput.value
-        .split(',')
-        .map(s => parseInt(s.trim()))
-        .filter(n => !isNaN(n) && n >= 1 && n <= 530 && !vendidos.has(n));
-      seleccionados = new Set(valores);
-
-      Array.from(panel.children).forEach(btn => {
-        const n = parseInt(btn.dataset.numero);
-        if (vendidos.has(n)) return;
-        btn.classList.toggle('selected', seleccionados.has(n));
-      });
-
-      actualizarCampos();
-    });
-
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-
-      if (seleccionados.size === 0) {
-        alert("Por favor selecciona al menos un cartón.");
-        return;
-      }
-
-      const nombre = form.nombre.value.trim();
-      const referencia = form.referencia.value.trim();
-
-      if (!nombre || !referencia) {
-        alert("Completa todos los campos.");
-        return;
-      }
-
-      const montoTotal = montoInput.value;
-      const cartones = Array.from(seleccionados).sort((a, b) => a - b);
-
-      // Guardar cada cartón como documento en Firestore
-      for (const n of cartones) {
-        await setDoc(doc(db, "cartonesVendidos", n.toString()), {
-          nombre: nombre,
-          timestamp: Date.now()
-        });
-        vendidos.add(n);
-        const btn = panel.querySelector(`button[data-numero="${n}"]`);
-        if (btn) {
-          btn.disabled = true;
-          btn.style.backgroundColor = '#121212';
-          btn.style.color = '#121212';
-          btn.classList.remove('selected');
-        }
-      }
-
-      // Guardar el pago
-      await setDoc(doc(collection(db, "pagos")), {
-        nombre: nombre,
-        referencia: referencia,
-        monto: montoTotal,
-        cartones: cartones,
-        timestamp: Date.now()
-      });
-
-      alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${cartones.join(', ')}\nReferencia: ${referencia}\nMonto: ${montoTotal} Bs`);
-
-      form.reset();
-      seleccionados.clear();
-      actualizarCampos();
-    });
-  </script>
-
   <style>
     body {
       background-color: #121212;
@@ -150,15 +11,42 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-    h1 {
-      text-align: center;
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
       margin-bottom: 20px;
     }
+
+    h1 {
+      margin: 0;
+    }
+
+    button.registro-btn {
+      width: auto;
+      background-color: #2196f3;
+      border: none;
+      color: white;
+      padding: 6px 12px;
+      font-weight: bold;
+      font-size: 0.85em;
+      border-radius: 6px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    button.registro-btn:hover {
+      background-color: #0b7dda;
+    }
+
     label {
       display: block;
       margin-top: 12px;
       font-weight: bold;
     }
+
     input[type="text"] {
       width: 100%;
       padding: 8px;
@@ -169,6 +57,7 @@
       color: white;
       font-weight: bold;
     }
+
     button {
       margin-top: 20px;
       width: 100%;
@@ -182,38 +71,58 @@
       cursor: pointer;
       transition: background-color 0.3s ease;
     }
+
     button:hover {
       background-color: #45a049;
     }
+
     #panel-cartones {
       margin-top: 30px;
       display: grid;
-      grid-template-columns: repeat(20, 1fr);
+      grid-template-columns: repeat(30, 1fr);
       gap: 6px;
-      max-width: 700px;
       margin-left: auto;
       margin-right: auto;
+      background-color: white;
+      padding: 10px;
+      border-radius: 8px;
     }
+
     .carton-btn {
-      background-color: #444;
+      background-color: transparent;
       border: none;
-      color: white;
+      color: black;
       font-weight: bold;
-      padding: 8px 0;
-      border-radius: 5px;
+      font-size: 1.6em;
+      padding: 4px 6px;
       cursor: pointer;
       user-select: none;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: color 0.3s ease, border-bottom 0.3s ease;
+      border-bottom: 2px solid transparent;
+      text-align: center;
     }
+
     .carton-btn.selected {
-      border: 2px solid #2196f3;
-      background-color: #222;
+      border-bottom: 2px solid #2196f3;
+      color: #2196f3;
+      background-color: transparent;
+    }
+
+    .carton-btn.vendido {
+      color: white !important;
+      background-color: white !important;
+      cursor: default;
+      pointer-events: none;
+      border: none;
     }
   </style>
 </head>
 <body>
 
-<h1>Compra de Cartones de Bingo</h1>
+<div class="header">
+  <h1>Compra de Cartones de Bingo</h1>
+  <button class="registro-btn" onclick="window.location.href='registro.html'">Registro</button>
+</div>
 
 <form id="compraForm">
   <label for="nombre">Nombre del jugador:</label>
@@ -232,6 +141,106 @@
 </form>
 
 <div id="panel-cartones"></div>
+
+<script>
+  const PRECIO_CARTON = 100;
+  const panel = document.getElementById('panel-cartones');
+  const seleccionadosInput = document.getElementById('cartonesSeleccionados');
+  const montoInput = document.getElementById('monto');
+  const form = document.getElementById('compraForm');
+  let seleccionados = new Set();
+  let vendidos = new Set();
+
+  let registros = JSON.parse(localStorage.getItem('registrosCartones')) || {};
+
+  // Crear botones para 530 cartones
+  for (let i = 1; i <= 530; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'carton-btn';
+    btn.textContent = i;
+    btn.dataset.numero = i;
+
+    if (registros[i]) {
+      vendidos.add(i);
+      btn.classList.add('vendido');
+    }
+
+    btn.addEventListener('click', () => {
+      if (vendidos.has(i)) return;
+      if (seleccionados.has(i)) {
+        seleccionados.delete(i);
+        btn.classList.remove('selected');
+      } else {
+        seleccionados.add(i);
+        btn.classList.add('selected');
+      }
+      actualizarCampos();
+    });
+
+    panel.appendChild(btn);
+  }
+
+  function actualizarCampos() {
+    const lista = Array.from(seleccionados).sort((a, b) => a - b);
+    seleccionadosInput.value = lista.join(', ');
+    montoInput.value = (lista.length * PRECIO_CARTON).toString();
+  }
+
+  seleccionadosInput.addEventListener('input', () => {
+    const valores = seleccionadosInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 530 && !vendidos.has(n));
+    seleccionados = new Set(valores);
+
+    Array.from(panel.children).forEach(btn => {
+      const n = parseInt(btn.dataset.numero);
+      if (vendidos.has(n)) return;
+      btn.classList.toggle('selected', seleccionados.has(n));
+    });
+
+    actualizarCampos();
+  });
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    if (seleccionados.size === 0) {
+      alert("Por favor selecciona al menos un cartón.");
+      return;
+    }
+
+    const nombre = form.nombre.value.trim();
+    const referencia = form.referencia.value.trim();
+    if (!nombre || !referencia) {
+      alert("Completa todos los campos.");
+      return;
+    }
+
+    alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a, b) => a - b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
+
+    registros = JSON.parse(localStorage.getItem('registrosCartones')) || {};
+    let pagos = JSON.parse(localStorage.getItem('registrosPagos')) || [];
+
+    seleccionados.forEach(n => {
+      registros[n] = nombre;
+      vendidos.add(n);
+      const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
+      if (btn) {
+        btn.classList.add('vendido');
+      }
+    });
+
+    pagos.push({
+      monto: montoInput.value,
+      referencia: referencia
+    });
+
+    localStorage.setItem('registrosCartones', JSON.stringify(registros));
+    localStorage.setItem('registrosPagos', JSON.stringify(pagos));
+
+    form.reset();
+    seleccionados.clear();
+    actualizarCampos();
+  });
+</script>
 
 </body>
 </html>
