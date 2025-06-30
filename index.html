@@ -117,9 +117,25 @@
     }
   </style>
 
-  <!-- Firebase SDKs -->
+  <!-- Firebase JS SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    // Tu configuración Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
+      authDomain: "bingomagic.firebaseapp.com",
+      projectId: "bingomagic",
+      storageBucket: "bingomagic.firebasestorage.app",
+      messagingSenderId: "239927101364",
+      appId: "1:239927101364:web:7557e068b2564c63a194e1",
+      measurementId: "G-0GJL6DJCEB"
+    };
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
 </head>
 <body>
 
@@ -147,21 +163,6 @@
 <div id="panel-cartones"></div>
 
 <script>
-  // Configuración Firebase
-  const firebaseConfig = {
-    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
-    authDomain: "bingomagic.firebaseapp.com",
-    projectId: "bingomagic",
-    storageBucket: "bingomagic.firebasestorage.app",
-    messagingSenderId: "239927101364",
-    appId: "1:239927101364:web:7557e068b2564c63a194e1",
-    measurementId: "G-0GJL6DJCEB"
-  };
-
-  // Inicializar Firebase
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-
   const PRECIO_CARTON = 100;
   const panel = document.getElementById('panel-cartones');
   const seleccionadosInput = document.getElementById('cartonesSeleccionados');
@@ -169,45 +170,51 @@
   const form = document.getElementById('compraForm');
   let seleccionados = new Set();
   let vendidos = new Set();
-  let registros = {};
 
-  // Carga registros desde Firestore y construye el panel
-  async function cargarRegistrosYConstruirPanel() {
-    panel.innerHTML = '';
-    vendidos.clear();
-    registros = {};
+  // Cargar cartones vendidos de Firebase y marcar en UI
+  async function cargarVendidos() {
+    try {
+      const snapshot = await db.collection('registrosCartones').get();
+      snapshot.forEach(doc => {
+        const num = parseInt(doc.id);
+        vendidos.add(num);
+      });
+      marcarVendidosUI();
+    } catch (error) {
+      console.error("Error cargando cartones vendidos:", error);
+    }
+  }
 
-    const snapshot = await db.collection("registrosCartones").get();
-    snapshot.forEach(doc => {
-      registros[doc.id] = doc.data().nombre;
-      vendidos.add(parseInt(doc.id));
+  // Crear botones para 530 cartones
+  for (let i = 1; i <= 530; i++) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'carton-btn';
+    btn.textContent = i;
+    btn.dataset.numero = i;
+
+    btn.addEventListener('click', () => {
+      if (vendidos.has(i)) return;
+      if (seleccionados.has(i)) {
+        seleccionados.delete(i);
+        btn.classList.remove('selected');
+      } else {
+        seleccionados.add(i);
+        btn.classList.add('selected');
+      }
+      actualizarCampos();
     });
 
-    for (let i = 1; i <= 530; i++) {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'carton-btn';
-      btn.textContent = i;
-      btn.dataset.numero = i;
+    panel.appendChild(btn);
+  }
 
-      if (vendidos.has(i)) {
+  function marcarVendidosUI() {
+    Array.from(panel.children).forEach(btn => {
+      const n = parseInt(btn.dataset.numero);
+      if (vendidos.has(n)) {
         btn.classList.add('vendido');
       }
-
-      btn.addEventListener('click', () => {
-        if (vendidos.has(i)) return;
-        if (seleccionados.has(i)) {
-          seleccionados.delete(i);
-          btn.classList.remove('selected');
-        } else {
-          seleccionados.add(i);
-          btn.classList.add('selected');
-        }
-        actualizarCampos();
-      });
-
-      panel.appendChild(btn);
-    }
+    });
   }
 
   function actualizarCampos() {
@@ -229,7 +236,7 @@
     actualizarCampos();
   });
 
-  form.addEventListener('submit', async e => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (seleccionados.size === 0) {
       alert("Por favor selecciona al menos un cartón.");
@@ -245,38 +252,42 @@
 
     alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a, b) => a - b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
 
-    // Guardar en Firestore
-    const batch = db.batch();
+    try {
+      const batch = db.batch();
 
-    seleccionados.forEach(n => {
-      const docRef = db.collection("registrosCartones").doc(n.toString());
-      batch.set(docRef, { nombre: nombre });
-    });
+      seleccionados.forEach(n => {
+        const docRef = db.collection('registrosCartones').doc(n.toString());
+        batch.set(docRef, { nombre });
+      });
 
-    const pagoRef = db.collection("registrosPagos").doc();
-    batch.set(pagoRef, {
-      monto: montoInput.value,
-      referencia: referencia,
-      fecha: new Date(),
-      nombre: nombre,
-      cartones: Array.from(seleccionados).sort((a,b)=>a-b)
-    });
+      const pagoRef = db.collection('registrosPagos').doc();
+      batch.set(pagoRef, {
+        monto: montoInput.value,
+        referencia,
+        timestamp: new Date()
+      });
 
-    await batch.commit();
+      await batch.commit();
 
-    seleccionados.forEach(n => {
-      vendidos.add(n);
-      const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
-      if (btn) btn.classList.add('vendido');
-    });
+      // Actualizar UI
+      seleccionados.forEach(n => {
+        vendidos.add(n);
+        const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
+        if (btn) {
+          btn.classList.add('vendido');
+        }
+      });
 
-    form.reset();
-    seleccionados.clear();
-    actualizarCampos();
+      form.reset();
+      seleccionados.clear();
+      actualizarCampos();
+    } catch (error) {
+      console.error("Error guardando en Firestore:", error);
+      alert("Ocurrió un error al guardar la compra. Intenta de nuevo.");
+    }
   });
 
-  // Al cargar la página, carga registros y crea el panel
-  cargarRegistrosYConstruirPanel();
+  cargarVendidos();
 </script>
 
 </body>
