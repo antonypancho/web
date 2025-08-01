@@ -30,7 +30,7 @@
     display: inline-block;
     margin: 5px 15px;
   }
-  button.volver-btn {
+  button.volver-btn, button.borrar-btn, button.gestion-btn {
     background-color: #2196f3;
     border: none;
     color: white;
@@ -40,9 +40,17 @@
     cursor: pointer;
     font-size: 1em;
     transition: background-color 0.3s ease;
+    margin-right: 10px;
   }
-  button.volver-btn:hover {
+  button.volver-btn:hover, button.gestion-btn:hover {
     background-color: #0b7dda;
+  }
+  button.borrar-btn {
+    background-color: #ff4444;
+    margin-right: 0;
+  }
+  button.borrar-btn:hover {
+    background-color: #cc0000;
   }
   table {
     width: 100%;
@@ -71,30 +79,32 @@
     font-size: 0.85em;
     color: #ff4444;
   }
-  button.editar-btn, button.eliminar-btn {
-    padding: 4px 10px;
+  #gestionPanel {
+    display: none;
+    background: #111;
+    padding: 15px;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    margin-bottom: 30px;
+  }
+  #gestionPanel h2 {
+    margin-top: 0;
+    margin-bottom: 15px;
+  }
+  #gestionPanel table {
+    margin-bottom: 0;
+  }
+  #gestionPanel button.edit-btn, #gestionPanel button.delete-btn {
+    padding: 3px 8px;
     margin-left: 6px;
-    font-size: 0.8em;
+    font-size: 0.85em;
     cursor: pointer;
     border-radius: 4px;
     border: none;
   }
-  button.editar-btn { background: #f0ad4e; color: white; }
-  button.eliminar-btn { background: #d9534f; color: white; }
-  button.borrar-btn {
-    background-color: #ff4444;
-    border: none;
-    color: white;
-    padding: 10px 20px;
-    font-weight: bold;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-bottom: 30px;
-    transition: background-color 0.3s ease;
-  }
-  button.borrar-btn:hover {
-    background-color: #cc0000;
-  }
+  #gestionPanel button.edit-btn { background: #f0ad4e; color: white; }
+  #gestionPanel button.delete-btn { background: #d9534f; color: white; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -130,13 +140,10 @@
 
     for (const c of cartonesOrdenados) {
       const tr = document.createElement('tr');
-
       const tdCarton = document.createElement('td');
       tdCarton.textContent = c;
-
       const tdNombre = document.createElement('td');
-      tdNombre.innerHTML = `${registros[c]} <button class="editar-btn" onclick="editarNombre(${c})">Editar</button> <button class="eliminar-btn" onclick="eliminarCarton(${c})">Eliminar</button>`;
-
+      tdNombre.textContent = registros[c];
       tr.appendChild(tdCarton);
       tr.appendChild(tdNombre);
       tbodyCartones.appendChild(tr);
@@ -176,6 +183,57 @@
       <span>Cartones faltantes: <b>${530 - cartonesOrdenados.length}</b></span>
       <span>Monto vendido: <b>${totalMonto} Bs</b></span>
     `;
+
+    // También cargar listado para gestión si está visible
+    if (document.getElementById('gestionPanel').style.display === 'block') {
+      cargarGestionPanel(registros, cartonesOrdenados);
+    }
+  }
+
+  function toggleGestion() {
+    const panel = document.getElementById('gestionPanel');
+    if (panel.style.display === 'block') {
+      panel.style.display = 'none';
+    } else {
+      panel.style.display = 'block';
+      cargarRegistros(); // recarga para mostrar panel actualizado
+    }
+  }
+
+  function cargarGestionPanel(registros, cartonesOrdenados) {
+    const tbodyGestion = document.querySelector('#gestionTabla tbody');
+    tbodyGestion.innerHTML = '';
+
+    cartonesOrdenados.forEach(c => {
+      const tr = document.createElement('tr');
+
+      const tdCarton = document.createElement('td');
+      tdCarton.textContent = c;
+
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = registros[c];
+
+      const tdAcciones = document.createElement('td');
+
+      const btnEditar = document.createElement('button');
+      btnEditar.textContent = 'Editar';
+      btnEditar.className = 'edit-btn';
+      btnEditar.onclick = () => editarNombre(c);
+
+      const btnEliminar = document.createElement('button');
+      btnEliminar.textContent = 'Eliminar';
+      btnEliminar.className = 'delete-btn';
+      btnEliminar.onclick = () => eliminarCarton(c);
+
+      tdAcciones.appendChild(btnEditar);
+      tdAcciones.appendChild(btnEliminar);
+
+      tr.appendChild(tdCarton);
+      tr.appendChild(tdNombre);
+      tr.appendChild(tdAcciones);
+
+      tbodyGestion.appendChild(tr);
+    });
   }
 
   function editarNombre(carton) {
@@ -198,11 +256,9 @@
     try {
       const batch = db.batch();
 
-      // Borrar cartones
       const cartonesSnapshot = await db.collection('registrosCartones').get();
       cartonesSnapshot.forEach(doc => batch.delete(doc.ref));
 
-      // Borrar pagos
       const pagosSnapshot = await db.collection('registrosPagos').get();
       pagosSnapshot.forEach(doc => batch.delete(doc.ref));
 
@@ -219,6 +275,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     cargarRegistros();
     document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
+    document.getElementById('btnGestion').addEventListener('click', toggleGestion);
   });
 </script>
 </head>
@@ -229,12 +286,15 @@
   <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
 </header>
 
-<button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+<div style="text-align:center; margin-bottom: 15px;">
+  <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
+  <button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+</div>
 
 <div class="resumen" id="resumen"></div>
 
 <table id="tablaCartones">
-  <caption>Cartón - Nombre (Editar/Eliminar)</caption>
+  <caption>Cartón - Nombre</caption>
   <thead>
     <tr><th>Cartón</th><th>Nombre</th></tr>
   </thead>
@@ -249,6 +309,17 @@
   </thead>
   <tbody></tbody>
 </table>
+
+<!-- Panel para gestión -->
+<div id="gestionPanel">
+  <h2>Gestión de Cartones Vendidos</h2>
+  <table id="gestionTabla">
+    <thead>
+      <tr><th>Cartón</th><th>Nombre</th><th>Acciones</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 </body>
 </html>
