@@ -21,6 +21,15 @@
   h1 {
     margin: 0;
   }
+  .resumen {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 1.1em;
+  }
+  .resumen span {
+    display: inline-block;
+    margin: 5px 15px;
+  }
   button.volver-btn {
     background-color: #2196f3;
     border: none;
@@ -53,28 +62,31 @@
     font-size: 1.2em;
     margin-bottom: 10px;
   }
-  button.borrar-btn {
-    background-color: #ff4444;
-    border: none;
-    color: white;
-    padding: 10px 20px;
+  .referencia-duplicada {
+    color: red;
     font-weight: bold;
-    border-radius: 6px;
+  }
+  .referencia-duplicada::after {
+    content: '  ¡Duplicada!';
+    font-size: 0.85em;
+    color: #ff4444;
+  }
+  button.editar-btn, button.eliminar-btn {
+    padding: 4px 10px;
+    margin-left: 6px;
+    font-size: 0.8em;
     cursor: pointer;
-    margin-bottom: 30px;
-    transition: background-color 0.3s ease;
+    border-radius: 4px;
+    border: none;
   }
-  button.borrar-btn:hover {
-    background-color: #cc0000;
-  }
+  button.editar-btn { background: #f0ad4e; color: white; }
+  button.eliminar-btn { background: #d9534f; color: white; }
 </style>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-  // Firebase config (igual que en index.html)
   const firebaseConfig = {
     apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
     authDomain: "bingomagic.firebaseapp.com",
@@ -84,105 +96,102 @@
     appId: "1:239927101364:web:7557e068b2564c63a194e1",
     measurementId: "G-0GJL6DJCEB"
   };
-
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
   async function cargarRegistros() {
+    const registros = {};
+    let totalMonto = 0;
+    const referencias = new Map();
+
     // Cargar registrosCartones
-    try {
-      const snapshotCartones = await db.collection('registrosCartones').get();
-      const registros = {};
-      snapshotCartones.forEach(doc => {
-        registros[doc.id] = doc.data().nombre;
-      });
+    const snapshotCartones = await db.collection('registrosCartones').get();
+    snapshotCartones.forEach(doc => {
+      registros[doc.id] = doc.data().nombre;
+    });
 
-      // Ordenar cartones
-      const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+    const tbodyCartones = document.querySelector('#tablaCartones tbody');
+    tbodyCartones.innerHTML = '';
 
-      // Mostrar en tablaCartones
-      const tbodyCartones = document.querySelector('#tablaCartones tbody');
-      tbodyCartones.innerHTML = '';
-      for (const c of cartonesOrdenados) {
-        const tr = document.createElement('tr');
-        const tdCarton = document.createElement('td');
-        tdCarton.textContent = c;
-        const tdNombre = document.createElement('td');
-        tdNombre.textContent = registros[c];
-        tr.appendChild(tdCarton);
-        tr.appendChild(tdNombre);
-        tbodyCartones.appendChild(tr);
-      }
-    } catch (error) {
-      console.error("Error cargando registrosCartones:", error);
+    for (const c of cartonesOrdenados) {
+      const tr = document.createElement('tr');
+
+      const tdCarton = document.createElement('td');
+      tdCarton.textContent = c;
+
+      const tdNombre = document.createElement('td');
+      tdNombre.innerHTML = `${registros[c]} <button class="editar-btn" onclick="editarNombre(${c})">Editar</button> <button class="eliminar-btn" onclick="eliminarCarton(${c})">Eliminar</button>`;
+
+      tr.appendChild(tdCarton);
+      tr.appendChild(tdNombre);
+      tbodyCartones.appendChild(tr);
     }
 
     // Cargar registrosPagos
-    try {
-      const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
-      const pagos = [];
-      snapshotPagos.forEach(doc => {
-        pagos.push(doc.data());
-      });
+    const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
+    const tbodyPagos = document.querySelector('#tablaPagos tbody');
+    tbodyPagos.innerHTML = '';
 
-      // Mostrar pagos
-      const tbodyPagos = document.querySelector('#tablaPagos tbody');
-      tbodyPagos.innerHTML = '';
-      pagos.forEach(p => {
-        const tr = document.createElement('tr');
-        const tdMonto = document.createElement('td');
-        tdMonto.textContent = p.monto;
-        const tdReferencia = document.createElement('td');
-        tdReferencia.textContent = p.referencia;
-        tr.appendChild(tdMonto);
-        tr.appendChild(tdReferencia);
-        tbodyPagos.appendChild(tr);
-      });
-    } catch (error) {
-      console.error("Error cargando registrosPagos:", error);
+    snapshotPagos.forEach(doc => {
+      const data = doc.data();
+      const referencia = data.referencia;
+      totalMonto += parseFloat(data.monto);
+
+      const tr = document.createElement('tr');
+      const tdMonto = document.createElement('td');
+      tdMonto.textContent = data.monto;
+
+      const tdReferencia = document.createElement('td');
+      tdReferencia.textContent = referencia;
+
+      if (referencias.has(referencia)) {
+        tdReferencia.classList.add('referencia-duplicada');
+        referencias.get(referencia).classList.add('referencia-duplicada');
+      } else {
+        referencias.set(referencia, tdReferencia);
+      }
+
+      tr.appendChild(tdMonto);
+      tr.appendChild(tdReferencia);
+      tbodyPagos.appendChild(tr);
+    });
+
+    document.getElementById('resumen').innerHTML = `
+      <span>Cartones vendidos: <b>${cartonesOrdenados.length}</b></span>
+      <span>Cartones faltantes: <b>${530 - cartonesOrdenados.length}</b></span>
+      <span>Monto vendido: <b>${totalMonto} Bs</b></span>
+    `;
+  }
+
+  function editarNombre(carton) {
+    const nuevoNombre = prompt("Editar nombre del jugador para cartón " + carton + ":");
+    if (nuevoNombre && nuevoNombre.trim()) {
+      db.collection('registrosCartones').doc(carton.toString()).update({ nombre: nuevoNombre.trim() })
+        .then(() => cargarRegistros());
     }
   }
 
-  async function borrarRegistros() {
-    if (!confirm("¿Estás seguro que quieres borrar todos los registros?")) return;
-
-    try {
-      // Borrar documentos de registrosCartones
-      const snapshotCartones = await db.collection('registrosCartones').get();
-      const batch = db.batch();
-      snapshotCartones.forEach(doc => batch.delete(doc.ref));
-      // Borrar documentos de registrosPagos
-      const snapshotPagos = await db.collection('registrosPagos').get();
-      snapshotPagos.forEach(doc => batch.delete(doc.ref));
-
-      await batch.commit();
-      cargarRegistros();
-      alert("Todos los registros fueron borrados.");
-    } catch (error) {
-      console.error("Error borrando registros:", error);
-      alert("Error al borrar registros.");
+  function eliminarCarton(carton) {
+    if (confirm("¿Deseas eliminar el cartón " + carton + " del registro?")) {
+      db.collection('registrosCartones').doc(carton.toString()).delete().then(() => cargarRegistros());
     }
   }
 
-  document.addEventListener('DOMContentLoaded', () => {
-    cargarRegistros();
-
-    document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
-  });
+  document.addEventListener('DOMContentLoaded', cargarRegistros);
 </script>
-
 </head>
 <body>
 
 <header>
-  <h1>Registro de Cartones Comprados</h1>
+  <h1>Registro de Cartones</h1>
   <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
 </header>
 
-<button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+<div class="resumen" id="resumen"></div>
 
 <table id="tablaCartones">
-  <caption>Cartón - Nombre</caption>
+  <caption>Cartón - Nombre (Editar/Eliminar)</caption>
   <thead>
     <tr><th>Cartón</th><th>Nombre</th></tr>
   </thead>
