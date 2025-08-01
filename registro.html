@@ -81,6 +81,20 @@
   }
   button.editar-btn { background: #f0ad4e; color: white; }
   button.eliminar-btn { background: #d9534f; color: white; }
+  button.borrar-btn {
+    background-color: #ff4444;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    font-weight: bold;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 30px;
+    transition: background-color 0.3s ease;
+  }
+  button.borrar-btn:hover {
+    background-color: #cc0000;
+  }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -178,7 +192,34 @@
     }
   }
 
-  document.addEventListener('DOMContentLoaded', cargarRegistros);
+  async function borrarRegistros() {
+    if (!confirm("¿Estás seguro que quieres borrar todos los registros?")) return;
+
+    try {
+      const batch = db.batch();
+
+      // Borrar cartones
+      const cartonesSnapshot = await db.collection('registrosCartones').get();
+      cartonesSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      // Borrar pagos
+      const pagosSnapshot = await db.collection('registrosPagos').get();
+      pagosSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      await batch.commit();
+
+      alert("Todos los registros han sido borrados.");
+      cargarRegistros();
+    } catch (error) {
+      console.error("Error borrando registros:", error);
+      alert("Error al borrar los registros.");
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarRegistros();
+    document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
+  });
 </script>
 </head>
 <body>
@@ -187,6 +228,8 @@
   <h1>Registro de Cartones</h1>
   <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
 </header>
+
+<button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
 
 <div class="resumen" id="resumen"></div>
 
