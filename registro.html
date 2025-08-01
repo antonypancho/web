@@ -30,7 +30,7 @@
     display: inline-block;
     margin: 5px 15px;
   }
-  button.volver-btn, button.borrar-btn, button.gestion-btn {
+  button.volver-btn, button.borrar-btn, button.gestion-btn, button.copiar-btn {
     background-color: #2196f3;
     border: none;
     color: white;
@@ -42,7 +42,7 @@
     transition: background-color 0.3s ease;
     margin-right: 10px;
   }
-  button.volver-btn:hover, button.gestion-btn:hover {
+  button.volver-btn:hover, button.gestion-btn:hover, button.copiar-btn:hover {
     background-color: #0b7dda;
   }
   button.borrar-btn {
@@ -184,7 +184,6 @@
       <span>Monto vendido: <b>${totalMonto} Bs</b></span>
     `;
 
-    // También cargar listado para gestión si está visible
     if (document.getElementById('gestionPanel').style.display === 'block') {
       cargarGestionPanel(registros, cartonesOrdenados);
     }
@@ -196,7 +195,7 @@
       panel.style.display = 'none';
     } else {
       panel.style.display = 'block';
-      cargarRegistros(); // recarga para mostrar panel actualizado
+      cargarRegistros();
     }
   }
 
@@ -272,10 +271,31 @@
     }
   }
 
+  function copiarTablasAlPortapapeles() {
+    function tablaAtexto(tabla) {
+      let texto = '';
+      const filas = tabla.querySelectorAll('tr');
+      filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('th, td');
+        const filaTexto = Array.from(celdas).map(c => c.textContent.trim()).join('\t');
+        texto += filaTexto + '\n';
+      });
+      return texto;
+    }
+
+    const tablaCartones = document.getElementById('tablaCartones');
+    const textoFinal = `-- Cartones Vendidos --\n` + tablaAtexto(tablaCartones);
+
+    navigator.clipboard.writeText(textoFinal)
+      .then(() => alert('¡Tabla copiada al portapapeles!'))
+      .catch(err => alert('Error al copiar: ' + err));
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     cargarRegistros();
     document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
     document.getElementById('btnGestion').addEventListener('click', toggleGestion);
+    document.getElementById('btnCopiar').addEventListener('click', copiarTablasAlPortapapeles);
   });
 </script>
 </head>
@@ -289,6 +309,7 @@
 <div style="text-align:center; margin-bottom: 15px;">
   <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
   <button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+  <button id="btnCopiar" class="copiar-btn">Copiar tabla</button>
 </div>
 
 <div class="resumen" id="resumen"></div>
