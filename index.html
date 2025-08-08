@@ -186,7 +186,7 @@
   }
 
   // Crear botones para 530 cartones
-  for (let i = 1; i <= 120; i++) {
+  for (let i = 1; i <= 240; i++) {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.className = 'carton-btn';
@@ -224,7 +224,7 @@
   }
 
   seleccionadosInput.addEventListener('input', () => {
-    const valores = seleccionadosInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 120 && !vendidos.has(n));
+    const valores = seleccionadosInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 240 && !vendidos.has(n));
     seleccionados = new Set(valores);
 
     Array.from(panel.children).forEach(btn => {
@@ -292,5 +292,6 @@
 
 </body>
 </html>
+
 
 
