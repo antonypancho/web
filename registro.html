@@ -32,8 +32,7 @@
   }
   #gestionPanel button.edit-btn { background: #f0ad4e; color: white; }
   #gestionPanel button.delete-btn { background: #d9534f; color: white; }
-  .delete-btn { background: #d9534f; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.85em; }
-  .delete-btn:hover { background: #b52b27; }
+  .action-btns button { margin-right: 6px; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -99,12 +98,21 @@
       const tdCartones = document.createElement('td');
       tdCartones.textContent = (data.cartones && data.cartones.length > 0) ? data.cartones.join(", ") : "-";
 
-      // 👉 Nueva columna acciones con botón eliminar
+      // 👉 Nueva columna acciones con botones editar y eliminar
       const tdAcciones = document.createElement('td');
+      tdAcciones.classList.add("action-btns");
+
+      const btnEditar = document.createElement('button');
+      btnEditar.textContent = "Editar";
+      btnEditar.className = "edit-btn";
+      btnEditar.onclick = () => editarPago(doc.id, data);
+
       const btnEliminar = document.createElement('button');
       btnEliminar.textContent = "Eliminar";
       btnEliminar.className = "delete-btn";
       btnEliminar.onclick = () => eliminarPago(doc.id, data.cartones || []);
+
+      tdAcciones.appendChild(btnEditar);
       tdAcciones.appendChild(btnEliminar);
 
       tr.appendChild(tdMonto);
@@ -154,6 +162,15 @@
     }
   }
 
+  function editarPago(pagoId, data) {
+    const nuevosCartones = prompt("Editar números comprados (separa con comas):", data.cartones.join(", "));
+    if (!nuevosCartones) return;
+    const cartonesArray = nuevosCartones.split(",").map(c => c.trim()).filter(c => c);
+
+    db.collection('registrosPagos').doc(pagoId).update({ cartones: cartonesArray })
+      .then(() => cargarRegistros());
+  }
+
   function eliminarCarton(carton) {
     if (confirm("¿Deseas eliminar el cartón " + carton + " del registro?")) {
       db.collection('registrosCartones').doc(carton.toString()).delete().then(() => cargarRegistros());
@@ -166,11 +183,9 @@
     try {
       const batch = db.batch();
 
-      // Eliminar el documento del pago
       const pagoRef = db.collection('registrosPagos').doc(pagoId);
       batch.delete(pagoRef);
 
-      // Liberar los cartones asociados
       cartones.forEach(c => {
         const cartonRef = db.collection('registrosCartones').doc(c.toString());
         batch.delete(cartonRef);
