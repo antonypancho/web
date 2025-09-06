@@ -3,105 +3,32 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registro de Compras</title>
+<title>Registro de Compras(0.1)</title>
 <style>
-  body {
-    background: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    margin: 20px;
-  }
-  header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  h1 {
-    margin: 0;
-  }
-  .resumen {
-    text-align: center;
-    margin-bottom: 20px;
-    font-size: 1.1em;
-  }
-  .resumen span {
-    display: inline-block;
-    margin: 5px 15px;
-  }
+  body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 20px; }
+  header { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; }
+  h1 { margin: 0; }
+  .resumen { text-align: center; margin-bottom: 20px; font-size: 1.1em; }
+  .resumen span { display: inline-block; margin: 5px 15px; }
   button.volver-btn, button.borrar-btn, button.gestion-btn, button.copiar-btn {
-    background-color: #2196f3;
-    border: none;
-    color: white;
-    font-weight: bold;
-    padding: 8px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.3s ease;
-    margin-right: 10px;
+    background-color: #2196f3; border: none; color: white; font-weight: bold;
+    padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 1em;
+    transition: background-color 0.3s ease; margin-right: 10px;
   }
-  button.volver-btn:hover, button.gestion-btn:hover, button.copiar-btn:hover {
-    background-color: #0b7dda;
-  }
-  button.borrar-btn {
-    background-color: #ff4444;
-    margin-right: 0;
-  }
-  button.borrar-btn:hover {
-    background-color: #cc0000;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 40px;
-  }
-  th, td {
-    border: 1px solid #555;
-    padding: 8px;
-    text-align: left;
-  }
-  th {
-    background: #222;
-  }
-  caption {
-    font-weight: bold;
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-  .referencia-duplicada {
-    color: red;
-    font-weight: bold;
-  }
-  .referencia-duplicada::after {
-    content: '  ¡Duplicada!';
-    font-size: 0.85em;
-    color: #ff4444;
-  }
-  #gestionPanel {
-    display: none;
-    background: #111;
-    padding: 15px;
-    border-radius: 8px;
-    max-height: 300px;
-    overflow-y: auto;
-    margin-bottom: 30px;
-  }
-  #gestionPanel h2 {
-    margin-top: 0;
-    margin-bottom: 15px;
-  }
-  #gestionPanel table {
-    margin-bottom: 0;
-  }
+  button.volver-btn:hover, button.gestion-btn:hover, button.copiar-btn:hover { background-color: #0b7dda; }
+  button.borrar-btn { background-color: #ff4444; margin-right: 0; }
+  button.borrar-btn:hover { background-color: #cc0000; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 40px; }
+  th, td { border: 1px solid #555; padding: 8px; text-align: left; }
+  th { background: #222; }
+  caption { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
+  .referencia-duplicada { color: red; font-weight: bold; }
+  .referencia-duplicada::after { content: '  ¡Duplicada!'; font-size: 0.85em; color: #ff4444; }
+  #gestionPanel { display: none; background: #111; padding: 15px; border-radius: 8px; max-height: 500px; overflow-y: auto; margin-bottom: 30px; }
+  #gestionPanel h2 { margin-top: 0; margin-bottom: 15px; }
+  #gestionPanel table { margin-bottom: 30px; }
   #gestionPanel button.edit-btn, #gestionPanel button.delete-btn {
-    padding: 3px 8px;
-    margin-left: 6px;
-    font-size: 0.85em;
-    cursor: pointer;
-    border-radius: 4px;
-    border: none;
+    padding: 3px 8px; margin-left: 6px; font-size: 0.85em; cursor: pointer; border-radius: 4px; border: none;
   }
   #gestionPanel button.edit-btn { background: #f0ad4e; color: white; }
   #gestionPanel button.delete-btn { background: #d9534f; color: white; }
@@ -130,22 +57,14 @@
 
     // Cargar registrosCartones
     const snapshotCartones = await db.collection('registrosCartones').get();
-    snapshotCartones.forEach(doc => {
-      registros[doc.id] = doc.data().nombre;
-    });
+    snapshotCartones.forEach(doc => { registros[doc.id] = doc.data().nombre; });
 
     const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
     const tbodyCartones = document.querySelector('#tablaCartones tbody');
     tbodyCartones.innerHTML = '';
-
     for (const c of cartonesOrdenados) {
       const tr = document.createElement('tr');
-      const tdCarton = document.createElement('td');
-      tdCarton.textContent = c;
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = registros[c];
-      tr.appendChild(tdCarton);
-      tr.appendChild(tdNombre);
+      tr.innerHTML = `<td>${c}</td><td>${registros[c]}</td>`;
       tbodyCartones.appendChild(tr);
     }
 
@@ -156,33 +75,30 @@
 
     snapshotPagos.forEach(doc => {
       const data = doc.data();
-      const referencia = data.referencia;
       totalMonto += parseFloat(data.monto);
 
       const tr = document.createElement('tr');
-      const tdMonto = document.createElement('td');
-      tdMonto.textContent = data.monto;
-
-      const tdReferencia = document.createElement('td');
-      tdReferencia.textContent = referencia;
-
-      if (referencias.has(referencia)) {
-        tdReferencia.classList.add('referencia-duplicada');
-        referencias.get(referencia).classList.add('referencia-duplicada');
-      } else {
-        referencias.set(referencia, tdReferencia);
-      }
-
-      tr.appendChild(tdMonto);
-      tr.appendChild(tdReferencia);
+      tr.innerHTML = `
+        <td>${data.monto}</td>
+        <td>${data.referencia}</td>
+        <td>${data.nombre || "-"}</td>
+        <td>${(data.cartones && data.cartones.length > 0) ? data.cartones.join(", ") : "-"}</td>
+        <td><button class='edit-btn' onclick='editarPago("${doc.id}", ${JSON.stringify(data.cartones)})'>Editar</button></td>
+      `;
       tbodyPagos.appendChild(tr);
     });
 
-    document.getElementById('resumen').innerHTML = `
-      <span>Cartones vendidos: <b>${cartonesOrdenados.length}</b></span>
-      <span>Cartones faltantes: <b>${360 - cartonesOrdenados.length}</b></span>
-      <span>Monto vendido: <b>${totalMonto} Bs</b></span>
-    `;
+   document.getElementById('resumen').innerHTML = `
+  <span>Cartones vendidos: <b>${cartonesOrdenados.length}</b></span>
+  <span>Cartones faltantes: <b>${360 - cartonesOrdenados.length}</b></span>
+  <span>
+    Monto vendido: <b>${totalMonto} Bs</b>
+    ${totalMonto !== cartonesOrdenados.length * 50 
+      ? ' ⚠ Inconsistencia detectada' 
+      : ''}
+  </span>
+`;
+
 
     if (document.getElementById('gestionPanel').style.display === 'block') {
       cargarGestionPanel(registros, cartonesOrdenados);
@@ -191,46 +107,19 @@
 
   function toggleGestion() {
     const panel = document.getElementById('gestionPanel');
-    if (panel.style.display === 'block') {
-      panel.style.display = 'none';
-    } else {
-      panel.style.display = 'block';
-      cargarRegistros();
-    }
+    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+    if (panel.style.display === 'block') cargarRegistros();
   }
 
   function cargarGestionPanel(registros, cartonesOrdenados) {
     const tbodyGestion = document.querySelector('#gestionTabla tbody');
     tbodyGestion.innerHTML = '';
-
     cartonesOrdenados.forEach(c => {
       const tr = document.createElement('tr');
-
-      const tdCarton = document.createElement('td');
-      tdCarton.textContent = c;
-
-      const tdNombre = document.createElement('td');
-      tdNombre.textContent = registros[c];
-
-      const tdAcciones = document.createElement('td');
-
-      const btnEditar = document.createElement('button');
-      btnEditar.textContent = 'Editar';
-      btnEditar.className = 'edit-btn';
-      btnEditar.onclick = () => editarNombre(c);
-
-      const btnEliminar = document.createElement('button');
-      btnEliminar.textContent = 'Eliminar';
-      btnEliminar.className = 'delete-btn';
-      btnEliminar.onclick = () => eliminarCarton(c);
-
-      tdAcciones.appendChild(btnEditar);
-      tdAcciones.appendChild(btnEliminar);
-
-      tr.appendChild(tdCarton);
-      tr.appendChild(tdNombre);
-      tr.appendChild(tdAcciones);
-
+      tr.innerHTML = `<td>${c}</td><td>${registros[c]}</td><td>
+        <button class='edit-btn' onclick='editarNombre(${c})'>Editar</button>
+        <button class='delete-btn' onclick='eliminarCarton(${c})'>Eliminar</button>
+      </td>`;
       tbodyGestion.appendChild(tr);
     });
   }
@@ -249,20 +138,59 @@
     }
   }
 
+  async function editarPago(pagoId, cartonesActuales) {
+    const nuevoTexto = prompt("Edita los cartones comprados (separados por coma):", cartonesActuales.join(", "));
+    if (!nuevoTexto) return;
+
+    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 360);
+
+    // Verificar duplicados
+    const snapshot = await db.collection('registrosCartones').get();
+    const vendidos = new Set();
+    snapshot.forEach(doc => vendidos.add(parseInt(doc.id)));
+
+    for (let n of nuevosCartones) {
+      if (vendidos.has(n) && !cartonesActuales.includes(n)) {
+        alert(`El cartón ${n} ya está vendido.`);
+        return;
+      }
+    }
+
+    // Obtener datos actuales del pago
+    const pagoDoc = await db.collection('registrosPagos').doc(pagoId).get();
+    const data = pagoDoc.data();
+
+    const batch = db.batch();
+
+    // Eliminar cartones anteriores
+    cartonesActuales.forEach(n => {
+      if (!nuevosCartones.includes(n)) {
+        batch.delete(db.collection('registrosCartones').doc(n.toString()));
+      }
+    });
+
+    // Agregar nuevos cartones
+    nuevosCartones.forEach(n => {
+      batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre: data.nombre });
+    });
+
+    // Actualizar el pago
+    batch.update(db.collection('registrosPagos').doc(pagoId), { cartones: nuevosCartones });
+
+    await batch.commit();
+    alert("Pago actualizado correctamente.");
+    cargarRegistros();
+  }
+
   async function borrarRegistros() {
     if (!confirm("¿Estás seguro que quieres borrar todos los registros?")) return;
-
     try {
       const batch = db.batch();
-
       const cartonesSnapshot = await db.collection('registrosCartones').get();
       cartonesSnapshot.forEach(doc => batch.delete(doc.ref));
-
       const pagosSnapshot = await db.collection('registrosPagos').get();
       pagosSnapshot.forEach(doc => batch.delete(doc.ref));
-
       await batch.commit();
-
       alert("Todos los registros han sido borrados.");
       cargarRegistros();
     } catch (error) {
@@ -282,12 +210,11 @@
       });
       return texto;
     }
-
     const tablaCartones = document.getElementById('tablaCartones');
-    const textoFinal = `-- Cartones Vendidos --\n` + tablaAtexto(tablaCartones);
-
+    const tablaPagos = document.getElementById('tablaPagos');
+    const textoFinal = `-- Cartones Vendidos --\n` + tablaAtexto(tablaCartones) + `\n-- Registro de Pagos --\n` + tablaAtexto(tablaPagos);
     navigator.clipboard.writeText(textoFinal)
-      .then(() => alert('¡Tabla copiada al portapapeles!'))
+      .then(() => alert('¡Tablas copiadas al portapapeles!'))
       .catch(err => alert('Error al copiar: ' + err));
   }
 
@@ -309,24 +236,22 @@
 <div style="text-align:center; margin-bottom: 15px;">
   <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
   <button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
-  <button id="btnCopiar" class="copiar-btn">Copiar tabla</button>
+  <button id="btnCopiar" class="copiar-btn">Copiar tablas</button>
 </div>
 
 <div class="resumen" id="resumen"></div>
 
 <table id="tablaCartones">
   <caption>Cartón - Nombre</caption>
-  <thead>
-    <tr><th>Cartón</th><th>Nombre</th></tr>
-  </thead>
+  <thead><tr><th>Cartón</th><th>Nombre</th></tr></thead>
   <tbody></tbody>
 </table>
 
 <h1>Registro de Pagos</h1>
 <table id="tablaPagos">
-  <caption>Monto - Referencia</caption>
+  <caption>Monto - Referencia - Nombre - Números comprados</caption>
   <thead>
-    <tr><th>Monto (BS)</th><th>Referencia</th></tr>
+    <tr><th>Monto (BS)</th><th>Referencia</th><th>Nombre</th><th>Números comprados</th><th>Acciones</th></tr>
   </thead>
   <tbody></tbody>
 </table>
@@ -335,15 +260,10 @@
 <div id="gestionPanel">
   <h2>Gestión de Cartones Vendidos</h2>
   <table id="gestionTabla">
-    <thead>
-      <tr><th>Cartón</th><th>Nombre</th><th>Acciones</th></tr>
-    </thead>
+    <thead><tr><th>Cartón</th><th>Nombre</th><th>Acciones</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 </body>
 </html>
-
-
-
