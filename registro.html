@@ -273,22 +273,30 @@
   }
 
   function copiarTablasAlPortapapeles() {
-    function tablaAtexto(tabla) {
-      let texto = '';
-      const filas = tabla.querySelectorAll('tr');
-      filas.forEach(fila => {
-        const celdas = fila.querySelectorAll('th, td');
-        const filaTexto = Array.from(celdas).map(c => c.textContent.trim()).join('\t');
-        texto += filaTexto + '\n';
-      });
-      return texto;
+  function tablaAtexto(tabla) {
+    let texto = '';
+    const filas = tabla.querySelectorAll('tr');
+    filas.forEach(fila => {
+      const celdas = fila.querySelectorAll('th, td');
+      const filaTexto = Array.from(celdas).map(c => c.textContent.trim()).join('\t');
+      texto += filaTexto + '\n';
+    });
+    return texto;
+  }
+
+  const tablaCartones = document.getElementById('tablaCartones');
+  const textoFinal = `-- Cartones Vendidos --\n` + tablaAtexto(tablaCartones);
+
+  navigator.clipboard.writeText(textoFinal)
+    .then(() => alert('¡Tabla de cartones copiada al portapapeles!'))
+    .catch(err => alert('Error al copiar: ' + err));
     }
     const tablaCartones = document.getElementById('tablaCartones');
     const tablaPagos = document.getElementById('tablaPagos');
     const textoFinal = `-- Cartones Vendidos --\n` + tablaAtexto(tablaCartones) + `\n-- Registro de Pagos --\n` + tablaAtexto(tablaPagos);
     navigator.clipboard.writeText(textoFinal)
       .then(() => alert('¡Tablas copiadas al portapapeles!'))
-      .catch(err => alert('Error al copiar: ' + err));
+      .catch(err => alert('Error al : ' + err));
   }
 
   document.addEventListener('DOMContentLoaded', () => {
@@ -340,3 +348,4 @@
 
 </body>
 </html>
+
