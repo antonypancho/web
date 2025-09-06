@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Compra de Cartones de Bingo</title>
+  <title>Compra de Cartones de Bingo(0.1)</title>
   <style>
     body {
       background-color: #121212;
@@ -11,110 +11,40 @@
       font-family: Arial, sans-serif;
       margin: 20px;
     }
-
-    .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    h1 {
-      margin: 0;
-    }
-
+    .header { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 20px; }
+    h1 { margin: 0; }
     button.registro-btn {
-      width: auto;
-      background-color: #2196f3;
-      border: none;
-      color: white;
-      padding: 3px 6px;
-      font-weight: bold;
-      font-size: 0.85em;
-      border-radius: 3px;
-      cursor: pointer;
-      white-space: nowrap;
+      width: auto; background-color: #2196f3; border: none; color: white;
+      padding: 3px 6px; font-weight: bold; font-size: 0.85em; border-radius: 3px;
+      cursor: pointer; white-space: nowrap;
     }
-
-    button.registro-btn:hover {
-      background-color: #0b7dda;
-    }
-
-    label {
-      display: block;
-      margin-top: 12px;
-      font-weight: bold;
-    }
-
+    button.registro-btn:hover { background-color: #0b7dda; }
+    label { display: block; margin-top: 12px; font-weight: bold; }
     input[type="text"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 6px;
-      border-radius: 5px;
-      border: none;
-      background: #333;
-      color: white;
-      font-weight: bold;
+      width: 100%; padding: 8px; margin-top: 6px; border-radius: 5px;
+      border: none; background: #333; color: white; font-weight: bold;
     }
-
     button {
-      margin-top: 20px;
-      width: 100%;
-      padding: 6px;
-      background-color: #4caf50;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-weight: bold;
-      font-size: 1.1em;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      margin-top: 20px; width: 100%; padding: 6px; background-color: #4caf50;
+      border: none; border-radius: 6px; color: white; font-weight: bold;
+      font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease;
     }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
+    button:hover { background-color: #45a049; }
     #panel-cartones {
-      margin-top: 30px;
-      display: grid;
-      grid-template-columns: repeat(15, 1fr);
-      gap: 6px;
-      margin-left: auto;
-      margin-right: auto;
-      background-color: white;
-      padding: 10px;
-      border-radius: 8px;
+      margin-top: 30px; display: grid; grid-template-columns: repeat(15, 1fr);
+      gap: 6px; margin-left: auto; margin-right: auto; background-color: white;
+      padding: 10px; border-radius: 8px;
     }
-
     .carton-btn {
-      background-color: transparent;
-      border: none;
-      color: black;
-      font-weight: bold;
-      font-size: 1.8em;
-      padding: 15px 2px;
-      cursor: pointer;
-      user-select: none;
+      background-color: transparent; border: none; color: black; font-weight: bold;
+      font-size: 1.8em; padding: 15px 2px; cursor: pointer; user-select: none;
       transition: color 0.3s ease, border-bottom 0.3s ease;
-      border-bottom: 2px solid transparent;
-      text-align: center;
-      line-height: 0.3; /* Reduce altura vertical extra */
+      border-bottom: 2px solid transparent; text-align: center; line-height: 0.3;
     }
-
-    .carton-btn.selected {
-      border-bottom: 2px solid #2196f3;
-      color: #2196f3;
-      background-color: transparent;
-    }
-
+    .carton-btn.selected { border-bottom: 2px solid #2196f3; color: #2196f3; }
     .carton-btn.vendido {
-      color: white !important;
-      background-color: white !important;
-      cursor: default;
-      pointer-events: none;
-      border: none;
+      color: #ffffff !important; background-color: #ffffff !important;
+      cursor: default; pointer-events: none; border: none;
     }
   </style>
 
@@ -123,7 +53,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Tu configuración Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
       authDomain: "bingomagic.firebaseapp.com",
@@ -133,7 +62,6 @@
       appId: "1:239927101364:web:7557e068b2564c63a194e1",
       measurementId: "G-0GJL6DJCEB"
     };
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
   </script>
@@ -172,21 +100,14 @@
   let seleccionados = new Set();
   let vendidos = new Set();
 
-  // Cargar cartones vendidos de Firebase y marcar en UI
   async function cargarVendidos() {
     try {
       const snapshot = await db.collection('registrosCartones').get();
-      snapshot.forEach(doc => {
-        const num = parseInt(doc.id);
-        vendidos.add(num);
-      });
+      snapshot.forEach(doc => vendidos.add(parseInt(doc.id)));
       marcarVendidosUI();
-    } catch (error) {
-      console.error("Error cargando cartones vendidos:", error);
-    }
+    } catch (error) { console.error("Error cargando cartones vendidos:", error); }
   }
 
-  // Crear botones para 530 cartones
   for (let i = 1; i <= 360; i++) {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -205,16 +126,13 @@
       }
       actualizarCampos();
     });
-
     panel.appendChild(btn);
   }
 
   function marcarVendidosUI() {
     Array.from(panel.children).forEach(btn => {
       const n = parseInt(btn.dataset.numero);
-      if (vendidos.has(n)) {
-        btn.classList.add('vendido');
-      }
+      if (vendidos.has(n)) btn.classList.add('vendido');
     });
   }
 
@@ -227,13 +145,11 @@
   seleccionadosInput.addEventListener('input', () => {
     const valores = seleccionadosInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 360 && !vendidos.has(n));
     seleccionados = new Set(valores);
-
     Array.from(panel.children).forEach(btn => {
       const n = parseInt(btn.dataset.numero);
       if (vendidos.has(n)) return;
       btn.classList.toggle('selected', seleccionados.has(n));
     });
-
     actualizarCampos();
   });
 
@@ -251,11 +167,19 @@
       return;
     }
 
-    alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a, b) => a - b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
-
     try {
-      const batch = db.batch();
+      // Validar que los cartones no estén ya vendidos
+      const conflictos = [];
+      for (let n of seleccionados) {
+        const doc = await db.collection('registrosCartones').doc(n.toString()).get();
+        if (doc.exists) conflictos.push(n);
+      }
+      if (conflictos.length > 0) {
+        alert("¡El cartón " + conflictos.join(', ') + " ya fue vendido!");
+        return;
+      }
 
+      const batch = db.batch();
       seleccionados.forEach(n => {
         const docRef = db.collection('registrosCartones').doc(n.toString());
         batch.set(docRef, { nombre });
@@ -265,18 +189,19 @@
       batch.set(pagoRef, {
         monto: montoInput.value,
         referencia,
+        nombre,
+        cartones: Array.from(seleccionados).sort((a, b) => a - b),
         timestamp: new Date()
       });
 
       await batch.commit();
 
-      // Actualizar UI
+      alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a,b)=>a-b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
+
       seleccionados.forEach(n => {
         vendidos.add(n);
         const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
-        if (btn) {
-          btn.classList.add('vendido');
-        }
+        if (btn) btn.classList.add('vendido');
       });
 
       form.reset();
@@ -293,18 +218,3 @@
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
