@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registro de Compras(0.1)</title>
+<title>Registro de Compras</title>
 <style>
   body { background: #000; color: #fff; font-family: Arial, sans-serif; margin: 20px; }
   header { display: flex; justify-content: center; align-items: center; gap: 20px; margin-bottom: 20px; }
@@ -24,14 +24,16 @@
   caption { font-weight: bold; font-size: 1.2em; margin-bottom: 10px; }
   .referencia-duplicada { color: red; font-weight: bold; }
   .referencia-duplicada::after { content: '  ¡Duplicada!'; font-size: 0.85em; color: #ff4444; }
-  #gestionPanel { display: none; background: #111; padding: 15px; border-radius: 8px; max-height: 500px; overflow-y: auto; margin-bottom: 30px; }
+  #gestionPanel { display: none; background: #111; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; margin-bottom: 30px; }
   #gestionPanel h2 { margin-top: 0; margin-bottom: 15px; }
-  #gestionPanel table { margin-bottom: 30px; }
+  #gestionPanel table { margin-bottom: 0; }
   #gestionPanel button.edit-btn, #gestionPanel button.delete-btn {
     padding: 3px 8px; margin-left: 6px; font-size: 0.85em; cursor: pointer; border-radius: 4px; border: none;
   }
   #gestionPanel button.edit-btn { background: #f0ad4e; color: white; }
   #gestionPanel button.delete-btn { background: #d9534f; color: white; }
+  .delete-btn { background: #d9534f; color: white; border: none; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 0.85em; }
+  .delete-btn:hover { background: #b52b27; }
 </style>
 
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -78,27 +80,47 @@
       totalMonto += parseFloat(data.monto);
 
       const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${data.monto}</td>
-        <td>${data.referencia}</td>
-        <td>${data.nombre || "-"}</td>
-        <td>${(data.cartones && data.cartones.length > 0) ? data.cartones.join(", ") : "-"}</td>
-        <td><button class='edit-btn' onclick='editarPago("${doc.id}", ${JSON.stringify(data.cartones)})'>Editar</button></td>
-      `;
+
+      const tdMonto = document.createElement('td');
+      tdMonto.textContent = data.monto;
+
+      const tdReferencia = document.createElement('td');
+      tdReferencia.textContent = data.referencia;
+      if (referencias.has(data.referencia)) {
+        tdReferencia.classList.add('referencia-duplicada');
+        referencias.get(data.referencia).classList.add('referencia-duplicada');
+      } else {
+        referencias.set(data.referencia, tdReferencia);
+      }
+
+      const tdNombre = document.createElement('td');
+      tdNombre.textContent = data.nombre || "-";
+
+      const tdCartones = document.createElement('td');
+      tdCartones.textContent = (data.cartones && data.cartones.length > 0) ? data.cartones.join(", ") : "-";
+
+      // 👉 Nueva columna acciones con botón eliminar
+      const tdAcciones = document.createElement('td');
+      const btnEliminar = document.createElement('button');
+      btnEliminar.textContent = "Eliminar";
+      btnEliminar.className = "delete-btn";
+      btnEliminar.onclick = () => eliminarPago(doc.id, data.cartones || []);
+      tdAcciones.appendChild(btnEliminar);
+
+      tr.appendChild(tdMonto);
+      tr.appendChild(tdReferencia);
+      tr.appendChild(tdNombre);
+      tr.appendChild(tdCartones);
+      tr.appendChild(tdAcciones);
+
       tbodyPagos.appendChild(tr);
     });
 
-   document.getElementById('resumen').innerHTML = `
-  <span>Cartones vendidos: <b>${cartonesOrdenados.length}</b></span>
-  <span>Cartones faltantes: <b>${360 - cartonesOrdenados.length}</b></span>
-  <span>
-    Monto vendido: <b>${totalMonto} Bs</b>
-    ${totalMonto !== cartonesOrdenados.length * 50 
-      ? ' ⚠ Inconsistencia detectada' 
-      : ''}
-  </span>
-`;
-
+    document.getElementById('resumen').innerHTML = `
+      <span>Cartones vendidos: <b>${cartonesOrdenados.length}</b></span>
+      <span>Cartones faltantes: <b>${360 - cartonesOrdenados.length}</b></span>
+      <span>Monto vendido: <b>${totalMonto} Bs</b></span>
+    `;
 
     if (document.getElementById('gestionPanel').style.display === 'block') {
       cargarGestionPanel(registros, cartonesOrdenados);
@@ -138,48 +160,29 @@
     }
   }
 
-  async function editarPago(pagoId, cartonesActuales) {
-    const nuevoTexto = prompt("Edita los cartones comprados (separados por coma):", cartonesActuales.join(", "));
-    if (!nuevoTexto) return;
+  async function eliminarPago(pagoId, cartones) {
+    if (!confirm("¿Deseas eliminar este pago y liberar sus cartones?")) return;
 
-    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 360);
+    try {
+      const batch = db.batch();
 
-    // Verificar duplicados
-    const snapshot = await db.collection('registrosCartones').get();
-    const vendidos = new Set();
-    snapshot.forEach(doc => vendidos.add(parseInt(doc.id)));
+      // Eliminar el documento del pago
+      const pagoRef = db.collection('registrosPagos').doc(pagoId);
+      batch.delete(pagoRef);
 
-    for (let n of nuevosCartones) {
-      if (vendidos.has(n) && !cartonesActuales.includes(n)) {
-        alert(`El cartón ${n} ya está vendido.`);
-        return;
-      }
+      // Liberar los cartones asociados
+      cartones.forEach(c => {
+        const cartonRef = db.collection('registrosCartones').doc(c.toString());
+        batch.delete(cartonRef);
+      });
+
+      await batch.commit();
+      alert("Pago eliminado correctamente.");
+      cargarRegistros();
+    } catch (error) {
+      console.error("Error al eliminar el pago:", error);
+      alert("Error al eliminar el pago.");
     }
-
-    // Obtener datos actuales del pago
-    const pagoDoc = await db.collection('registrosPagos').doc(pagoId).get();
-    const data = pagoDoc.data();
-
-    const batch = db.batch();
-
-    // Eliminar cartones anteriores
-    cartonesActuales.forEach(n => {
-      if (!nuevosCartones.includes(n)) {
-        batch.delete(db.collection('registrosCartones').doc(n.toString()));
-      }
-    });
-
-    // Agregar nuevos cartones
-    nuevosCartones.forEach(n => {
-      batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre: data.nombre });
-    });
-
-    // Actualizar el pago
-    batch.update(db.collection('registrosPagos').doc(pagoId), { cartones: nuevosCartones });
-
-    await batch.commit();
-    alert("Pago actualizado correctamente.");
-    cargarRegistros();
   }
 
   async function borrarRegistros() {
@@ -251,7 +254,13 @@
 <table id="tablaPagos">
   <caption>Monto - Referencia - Nombre - Números comprados</caption>
   <thead>
-    <tr><th>Monto (BS)</th><th>Referencia</th><th>Nombre</th><th>Números comprados</th><th>Acciones</th></tr>
+    <tr>
+      <th>Monto (BS)</th>
+      <th>Referencia</th>
+      <th>Nombre</th>
+      <th>Números comprados</th>
+      <th>Acciones</th>
+    </tr>
   </thead>
   <tbody></tbody>
 </table>
