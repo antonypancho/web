@@ -442,40 +442,40 @@
     }
   }
 
-  // ********** FUNCIÓN DE COPIAR ACTUALIZADA **********
-  // (Ahora copia ambas tablas y omite la columna de "Acciones")
+  // ********** ¡FUNCIÓN DE COPIAR CORREGIDA! **********
+  // (Ahora solo copia la tabla de cartones)
   function copiarTablasAlPortapapeles() {
     function tablaAtexto(tabla) {
       let texto = '';
       const filas = tabla.querySelectorAll('tr');
       filas.forEach(fila => {
         const celdas = fila.querySelectorAll('th, td');
-        // Mapea celdas, pero ignora la de 'Acciones'
+        // Mapea celdas, pero ignora la de 'Acciones' (esto está bien)
         const filaTexto = Array.from(celdas).map((c, idx) => {
-            if (c.textContent.trim() === 'Acciones') return null; // Ignorar cabecera
-            // Si la fila tiene botones Y es la última celda, ignorarla
+            if (c.textContent.trim() === 'Acciones') return null; 
             if (fila.querySelector('button') && idx === celdas.length - 1) return null; 
             
             return c.textContent.trim()
-                     .replace(/\s+/g, ' '); // Limpia espacios extra
+                     .replace(/\s+/g, ' '); 
         })
-        .filter(t => t !== null) // Filtra las celdas nulas
-        .join('\t'); // Separa por tabulación
+        .filter(t => t !== null) 
+        .join('\t'); 
         
         if (filaTexto) texto += filaTexto + '\n';
       });
       return texto;
     }
-    const tablaCartones = document.getElementById('tablaCartones');
-    const tablaPagos = document.getElementById('tablaPagos');
     
+    // 1. Solo seleccionamos 'tablaCartones'
+    const tablaCartones = document.getElementById('tablaCartones');
+    
+    // 2. 'textoFinal' AHORA solo usa 'tablaCartones'
     const textoFinal = `== Cartones Vendidos ==\n` + 
-                       tablaAtexto(tablaCartones) +
-                       `\n== Registro de Pagos ==\n` +
-                       tablaAtexto(tablaPagos);
+                       tablaAtexto(tablaCartones);
                        
     navigator.clipboard.writeText(textoFinal)
-      .then(() => alert('¡Tablas de cartones y pagos copiadas al portapapeles!'))
+      // 3. El mensaje de alerta se actualiza
+      .then(() => alert('¡Tabla de Cartones Vendidos copiada al portapapeles!'))
       .catch(err => alert('Error al copiar: ' + err));
   }
   
@@ -531,3 +531,4 @@
 
 </div> </body>
 </html>
+
