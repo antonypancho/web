@@ -3,56 +3,230 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Compra de Cartones de Bingo(0.1)</title>
+  <title>Compra de Cartones de Bingo (1.1 - Manejo de Pendientes)</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
   <style>
+    /* --- Reseteo Básico y Tema Base --- */
+    * {
+      box-sizing: border-box; /* Mejor manejo de padding y border */
+    }
+
     body {
-      background-color: #121212;
-      color: white;
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      /* Fondo mágico con gradiente sutil */
+      background: linear-gradient(135deg, #0b021a 0%, #121212 100%);
+      color: #f0f0f0;
+      font-family: 'Nunito', Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
     }
-    .header { display: flex; justify-content: center; align-items: center; gap: 12px; margin-bottom: 20px; }
-    h1 { margin: 0; }
+
+    /* --- Encabezado --- */
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 25px;
+      text-align: center;
+    }
+
+    h1 {
+      margin: 0;
+      color: #ffffff;
+      /* Sombra de texto para un leve brillo */
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      font-size: 1.8em;
+    }
+
     button.registro-btn {
-      width: auto; background-color: #2196f3; border: none; color: white;
-      padding: 3px 6px; font-weight: bold; font-size: 0.85em; border-radius: 3px;
-      cursor: pointer; white-space: nowrap;
+      width: auto;
+      background-color: #3a3a3a; /* Un gris más sutil */
+      border: 1px solid #555;
+      color: #f0f0f0;
+      padding: 5px 10px;
+      font-weight: bold;
+      font-size: 0.85em;
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.3s ease;
     }
-    button.registro-btn:hover { background-color: #0b7dda; }
-    label { display: block; margin-top: 12px; font-weight: bold; }
+    
+    button.registro-btn:hover {
+      background-color: #4a4a4a;
+      border-color: #777;
+    }
+
+    /* --- Formulario Moderno --- */
+    form {
+      max-width: 500px; /* Limita el ancho del form en pantallas grandes */
+      margin: 0 auto 30px auto; /* Centra el formulario */
+    }
+
+    label {
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+      font-weight: bold;
+      color: #aaa;
+    }
+
     input[type="text"] {
-      width: 100%; padding: 8px; margin-top: 6px; border-radius: 5px;
-      border: none; background: #333; color: white; font-weight: bold;
+      width: 100%;
+      padding: 12px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #1e1e1e; /* Un poco más claro que el fondo */
+      color: #f0f0f0;
+      font-weight: bold;
+      font-size: 1em;
+      font-family: 'Nunito', Arial, sans-serif;
+      transition: all 0.3s ease;
     }
-    button {
-      margin-top: 20px; width: 100%; padding: 6px; background-color: #4caf50;
-      border: none; border-radius: 6px; color: white; font-weight: bold;
-      font-size: 1.1em; cursor: pointer; transition: background-color 0.3s ease;
+
+    /* Estilo para el nuevo campo de pendientes */
+    input#pendientes {
+        background-color: #fdd835;
+        color: #121212;
+        border-color: #fbc02d;
     }
-    button:hover { background-color: #45a049; }
+
+    input[type="text"]:focus {
+      /* Brillo dorado al seleccionar */
+      outline: none;
+      border-color: #fdd835;
+      box-shadow: 0 0 15px rgba(253, 216, 53, 0.5);
+    }
+    
+    input[type="text"]#monto {
+      background-color: #222;
+      color: #fdd835; /* Resalta el monto en dorado */
+      font-size: 1.1em;
+    }
+
+    /* Botón de Compra "Mágico" */
+    button[type="submit"] {
+      margin-top: 25px;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(45deg, #fdd835, #fbc02d); /* Gradiente dorado */
+      border: none;
+      border-radius: 6px;
+      color: #121212; /* Texto oscuro para contrastar con dorado */
+      font-weight: bold;
+      font-size: 1.2em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(253, 216, 53, 0.2);
+    }
+
+    button[type="submit"]:hover {
+      background: linear-gradient(45deg, #fbc02d, #f9a825);
+      box-shadow: 0 6px 20px rgba(253, 216, 53, 0.4);
+      transform: translateY(-2px); /* Efecto de levantar */
+    }
+
+    /* Estilo para el botón cuando está deshabilitado */
+    button[type="submit"]:disabled {
+        background: #555;
+        color: #999;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+
+    /* Botón de Descarga */
+    #downloadImageBtn {
+        max-width: 500px;
+        margin: 20px auto; /* Centra y da espacio */
+        display: block; /* Para que margin auto funcione */
+        padding: 10px 15px;
+        background-color: #2196f3; /* Azul para diferenciar */
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+    #downloadImageBtn:hover {
+        background-color: #0d8ed1;
+        transform: translateY(-1px);
+    }
+
+
+    /* --- Panel de Cartones Responsivo y Mágico --- */
     #panel-cartones {
-      margin-top: 30px; display: grid; grid-template-columns: repeat(15, 1fr);
-      gap: 6px; margin-left: auto; margin-right: auto; background-color: white;
-      padding: 10px; border-radius: 8px;
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
+      gap: 8px; /* Un poco más de espacio */
+      margin-left: auto;
+      margin-right: auto;
+      background-color: rgb(255, 255, 255); /* Fondo blanco */
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      max-width: 1200px; /* Límite para pantallas muy anchas */
     }
+
     .carton-btn {
-      background-color: transparent; border: none; color: black; font-weight: bold;
-      font-size: 1.8em; padding: 15px 2px; cursor: pointer; user-select: none;
-      transition: color 0.3s ease, border-bottom 0.3s ease;
-      border-bottom: 2px solid transparent; text-align: center; line-height: 0.3;
+      aspect-ratio: 1 / 1; 
+      background-color: #ffffff; /* Fondo blanco */
+      border: 1px solid transparent; /* Borde transparente (invisible) */
+      color: #000000; /* Texto negro */
+      font-weight: 900; /* Números más gruesos */
+      font-size: 1.4em; /* Números más grandes */
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.3s ease-in-out;
+      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      line-height: 1;
     }
-    .carton-btn.selected { border-bottom: 2px solid #2196f3; color: #2196f3; }
+
+    .carton-btn:hover:not(.vendido):not(.selected) {
+      background-color: #f0f0f0; /* Un gris muy claro para el hover */
+      border-color: transparent; /* Mantenemos el borde invisible */
+      color: #000000; /* Texto sigue negro */
+    }
+
+    .carton-btn.selected {
+      background-color: #fdd835;
+      color: #121212; /* Texto oscuro para el fondo dorado */
+      border-color: #fbc02d; /* ¡Aquí el borde SÍ aparece! */
+      transform: scale(1.1); /* Resalta el botón */
+      box-shadow: 0 0 15px rgba(253, 216, 53, 0.6);
+      z-index: 10; /* Asegura que esté por encima de otros */
+    }
+
     .carton-btn.vendido {
-      color: #ffffff !important; background-color: #ffffff !important;
-      cursor: default; pointer-events: none; border: none;
+      background-color: transparent;
+      color: transparent; /* Oculta el número */
+      border-color: transparent; /* Oculta el borde */
+      opacity: 0.1; /* Lo hace muy sutil, como un fantasma */
+      cursor: default;
+      pointer-events: none;
+      text-decoration: none; /* Quita el tachado */
+      box-shadow: none; /* Se asegura de quitar cualquier sombra */
     }
+
   </style>
 
-  <!-- Firebase JS SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
+    // Tu configuración de Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
       authDomain: "bingomagic.firebaseapp.com",
@@ -69,7 +243,7 @@
 <body>
 
 <div class="header">
-  <h1>Compra de Cartones de Bingo</h1>
+  <h1>✨ Compra de Cartones de Bingo</h1>
   <button class="registro-btn" onclick="window.location.href='registro.html'">Registro</button>
 </div>
 
@@ -80,14 +254,19 @@
   <label for="cartonesSeleccionados">Cartones seleccionados:</label>
   <input type="text" id="cartonesSeleccionados" name="cartonesSeleccionados" placeholder="Selecciona o escribe los cartones separados por coma" />
 
+  <label for="pendientes">Cartones Pendientes (si faltan):</label>
+  <input type="text" id="pendientes" name="pendientes" value="0" />
+
   <label for="referencia">Referencia de Pago:</label>
   <input type="text" id="referencia" name="referencia" required />
 
   <label for="monto">Monto (Bs):</label>
   <input type="text" id="monto" name="monto" readonly value="0" />
 
-  <button type="submit">COMPRAR</button>
+  <button type="submit" id="comprarBtn">COMPRAR</button>
 </form>
+
+<button id="downloadImageBtn">Descargar Imagen de Cartones Disponibles</button>
 
 <div id="panel-cartones"></div>
 
@@ -97,6 +276,12 @@
   const seleccionadosInput = document.getElementById('cartonesSeleccionados');
   const montoInput = document.getElementById('monto');
   const form = document.getElementById('compraForm');
+  const downloadImageBtn = document.getElementById('downloadImageBtn');
+  const comprarBtn = document.getElementById('comprarBtn');
+  
+  // ********** ¡NUEVA REFERENCIA! **********
+  const pendientesInput = document.getElementById('pendientes');
+
   let seleccionados = new Set();
   let vendidos = new Set();
 
@@ -136,15 +321,25 @@
     });
   }
 
+  // ********** ¡FUNCIÓN ACTUALIZADA! **********
+  // Ahora calcula el monto usando los cartones seleccionados + los pendientes
   function actualizarCampos() {
     const lista = Array.from(seleccionados).sort((a, b) => a - b);
     seleccionadosInput.value = lista.join(', ');
-    montoInput.value = (lista.length * PRECIO_CARTON).toString();
+    
+    // Nueva lógica de monto
+    const numPendientes = parseInt(pendientesInput.value) || 0;
+    montoInput.value = ((lista.length + numPendientes) * PRECIO_CARTON).toString();
   }
 
   seleccionadosInput.addEventListener('input', () => {
-    const valores = seleccionadosInput.value.split(',').map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 360 && !vendidos.has(n));
+    // Validar números entre 1 y 360 (tu lógica original de 0 no funcionaría aquí)
+    const valores = seleccionadosInput.value.split(',')
+      .map(s => parseInt(s.trim()))
+      .filter(n => !isNaN(n) && n >= 1 && n <= 360 && !vendidos.has(n));
+      
     seleccionados = new Set(valores);
+    
     Array.from(panel.children).forEach(btn => {
       const n = parseInt(btn.dataset.numero);
       if (vendidos.has(n)) return;
@@ -153,13 +348,23 @@
     actualizarCampos();
   });
 
+  // ********** ¡NUEVO LISTENER! **********
+  // Si se cambia el número de pendientes, se actualiza el monto total
+  pendientesInput.addEventListener('input', actualizarCampos);
+
+
+  // ********** ¡FUNCIÓN DE SUBMIT ACTUALIZADA! **********
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (seleccionados.size === 0) {
-      alert("Por favor selecciona al menos un cartón.");
+    
+    const numPendientes = parseInt(pendientesInput.value) || 0;
+
+    // Validación: no se puede comprar si no hay ni seleccionados ni pendientes
+    if (seleccionados.size === 0 && numPendientes === 0) {
+      alert("Por favor selecciona al menos un cartón o indica un cartón pendiente.");
       return;
     }
-
+    
     const nombre = form.nombre.value.trim();
     const referencia = form.referencia.value.trim();
     if (!nombre || !referencia) {
@@ -167,36 +372,61 @@
       return;
     }
 
+    comprarBtn.disabled = true;
+    comprarBtn.textContent = 'Procesando...';
+
     try {
-      // Validar que los cartones no estén ya vendidos
+      // Validar que los cartones SELECCIONADOS no estén ya vendidos
       const conflictos = [];
       for (let n of seleccionados) {
         const doc = await db.collection('registrosCartones').doc(n.toString()).get();
         if (doc.exists) conflictos.push(n);
       }
+      
+      // ¡MANEJO DE CONFLICTOS!
       if (conflictos.length > 0) {
-        alert("¡El cartón " + conflictos.join(', ') + " ya fue vendido!");
-        return;
+          alert("¡Conflicto! El cartón " + conflictos.join(', ') + " ya fue vendido. Por favor, deselecciónalo y escoge un reemplazo.");
+          // Deseleccionamos los cartones en conflicto
+          conflictos.forEach(n => {
+              seleccionados.delete(n);
+              const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
+              if (btn) btn.classList.remove('selected');
+          });
+          actualizarCampos();
+          // No lanzamos error, solo reactivamos el botón en 'finally'
+          // para que el admin pueda escoger el reemplazo.
+          return; 
       }
 
       const batch = db.batch();
+      
+      // Se registran SOLO los cartones seleccionados (los pendientes no)
       seleccionados.forEach(n => {
         const docRef = db.collection('registrosCartones').doc(n.toString());
         batch.set(docRef, { nombre });
       });
 
+      // Se guarda el registro de pago con la info de pendientes
       const pagoRef = db.collection('registrosPagos').doc();
       batch.set(pagoRef, {
         monto: montoInput.value,
         referencia,
         nombre,
         cartones: Array.from(seleccionados).sort((a, b) => a - b),
+        pendientes: numPendientes, // ¡CAMPO NUEVO GUARDADO!
         timestamp: new Date()
       });
 
       await batch.commit();
 
-      alert(`Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a,b)=>a-b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`);
+      // Nuevo mensaje de Alerta
+      let alertaMensaje = `Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a,b)=>a-b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`;
+      
+      if (numPendientes > 0) {
+          alertaMensaje += `\n\nATENCIÓN: Quedan ${numPendientes} cartones PENDIENTES por asignar.`;
+      }
+      alert(alertaMensaje);
+
 
       seleccionados.forEach(n => {
         vendidos.add(n);
@@ -206,11 +436,74 @@
 
       form.reset();
       seleccionados.clear();
-      actualizarCampos();
+      actualizarCampos(); // Esto pondrá el monto y pendientes en 0
+
     } catch (error) {
-      console.error("Error guardando en Firestore:", error);
-      alert("Ocurrió un error al guardar la compra. Intenta de nuevo.");
+        console.error("Error guardando en Firestore:", error);
+        alert("Ocurrió un error al guardar la compra. Intenta de nuevo.");
+    } finally {
+      comprarBtn.disabled = false;
+      comprarBtn.textContent = 'COMPRAR';
     }
+  });
+
+
+  /* --- Lógica de Descarga de Imagen (Sin cambios funcionales, solo estilo) --- */
+  downloadImageBtn.addEventListener('click', async () => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    const totalCartones = 360;
+    const cols = 15;
+    const rows = Math.ceil(totalCartones / cols);
+    const cellWidth = 60;
+    const cellHeight = 60;
+    const padding = 10;
+    const titleHeight = 50;
+
+    canvas.width = cols * (cellWidth + padding) + padding;
+    canvas.height = titleHeight + rows * (cellHeight + padding) + padding;
+
+    // Fondo del canvas (blanco, como tu panel)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Título de la imagen (negro)
+    ctx.font = 'bold 24px Nunito';
+    ctx.fillStyle = '#000000'; 
+    ctx.textAlign = 'center';
+    ctx.fillText('Cartones de Bingo Disponibles', canvas.width / 2, 35);
+
+    for (let i = 1; i <= totalCartones; i++) {
+      const col = (i - 1) % cols;
+      const row = Math.floor((i - 1) / cols);
+
+      const x = col * (cellWidth + padding) + padding;
+      const y = titleHeight + row * (cellHeight + padding) + padding;
+
+      if (!vendidos.has(i)) {
+        
+        ctx.fillStyle = '#ffffff'; 
+        ctx.strokeStyle = '#cccccc'; // Borde gris claro
+        ctx.lineWidth = 1;
+        ctx.fillRect(x, y, cellWidth, cellHeight);
+        ctx.strokeRect(x, y, cellWidth, cellHeight);
+
+        ctx.font = '900 24px Nunito'; // Fuente gruesa
+        ctx.fillStyle = '#000000'; // Texto negro
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(i.toString(), x + cellWidth / 2, y + cellHeight / 2);
+      }
+    }
+
+    const image = canvas.toDataURL('image/png');
+    const link = document.createElement('a');
+    link.download = 'cartones_bingo_disponibles.png';
+    link.href = image;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   });
 
   cargarVendidos();
@@ -218,4 +511,3 @@
 
 </body>
 </html>
-
