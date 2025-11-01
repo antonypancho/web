@@ -237,7 +237,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // Tu JavaScript de `cargarRegistros` (sin cambios)
+  // Tu JavaScript de `cargarRegistros` (con la lógica de pendientes)
   async function cargarRegistros() {
     const registros = {};
     let totalMonto = 0;
@@ -348,7 +348,7 @@
     }
   }
 
-  // Tu JavaScript de `editarPago` (sin cambios)
+  // Tu JavaScript de `editarPago` (con la lógica de pendientes)
   async function editarPago(pagoId, cartonesActuales, pendientesActuales) {
     const nuevoTexto = prompt("Edita los cartones comprados (separados por coma):", cartonesActuales.join(", "));
     if (nuevoTexto === null) return; // Usuario canceló
@@ -442,9 +442,8 @@
     }
   }
 
-  
-  // ********** ¡FUNCIÓN DE COPIAR CORREGIDA! **********
-  // (Ahora solo copia la tabla de cartones)
+  // ********** FUNCIÓN DE COPIAR ACTUALIZADA **********
+  // (Ahora copia ambas tablas y omite la columna de "Acciones")
   function copiarTablasAlPortapapeles() {
     function tablaAtexto(tabla) {
       let texto = '';
@@ -468,15 +467,16 @@
       return texto;
     }
     const tablaCartones = document.getElementById('tablaCartones');
+    const tablaPagos = document.getElementById('tablaPagos');
     
-    // Modificado: Solo incluye la tabla de cartones
     const textoFinal = `== Cartones Vendidos ==\n` + 
-                       tablaAtexto(tablaCartones);
+                       tablaAtexto(tablaCartones) +
+                       `\n== Registro de Pagos ==\n` +
+                       tablaAtexto(tablaPagos);
                        
     navigator.clipboard.writeText(textoFinal)
-      // Modificado: Mensaje de alerta actualizado
-      .then(() => alert('¡Tabla de Cartones Vendidos copiada al portapapeles!'))
-      .catch(err => alert('Error al copiar: 'D' + err));
+      .then(() => alert('¡Tablas de cartones y pagos copiadas al portapapeles!'))
+      .catch(err => alert('Error al copiar: ' + err));
   }
   
   // Tu JavaScript de `DOMContentLoaded` (sin cambios)
@@ -499,7 +499,8 @@
 
     <div class="button-bar">
       <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
-      <button id="btnCopiar" class="copiar-btn">Copiar Tabla de Cartones</button> <button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
+      <button id="btnCopiar" class="copiar-btn">Copiar Tablas</button>
+      <button id="btnBorrar" class="borrar-btn">Borrar todos los registros</button>
     </div>
 
     <div class="resumen" id="resumen">
