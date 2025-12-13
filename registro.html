@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registro de Compras (0.4 - Separación de Pagos)</title>
+<title>Registro de Compras (0.5 - Separación de Pagos)</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -355,7 +355,7 @@
       ${totalApartados > 0 ? `<span>Apartados pendientes: <b class="apartado-count">${totalApartados}</b></span>` : ''}
       <span>
         Monto total registrado: <b>${totalMonto} Bs</b>
-        ${totalMonto !== (cartonesOrdenados.length + totalPendientes) * 75 
+        ${totalMonto !== (cartonesOrdenados.length + totalPendientes) * 100 
           ? ' <b style="color:#ff6b6b;">⚠ Inconsistencia</b>' 
           : ''}
       </span>
@@ -550,19 +550,13 @@
     }
     
     const tablaCartones = document.getElementById('tablaCartones');
-    const tablaPagos = document.getElementById('tablaPagos');
-    const tablaApartados = document.getElementById('tablaApartados');
 
     const textoCartones = tablaAtexto(tablaCartones);
-    const textoPagos = tablaAtexto(tablaPagos);
-    const textoApartados = tablaAtexto(tablaApartados);
 
     let textoFinal = `== CARTONES VENDIDOS ==\n${textoCartones}\n\n`;
-    textoFinal += `== REGISTRO DE PAGOS (Directos) ==\n${textoPagos}\n\n`;
-    textoFinal += `== REGISTRO DE APARTADOS ==\n${textoApartados}`;
 
     navigator.clipboard.writeText(textoFinal)
-      .then(() => alert('¡Todas las tablas (Cartones, Pagos y Apartados) copiadas al portapapeles!'))
+      .then(() => alert('¡tablas copiadas al portapapeles!'))
       .catch(err => alert('Error al copiar: ' + err));
   }
   
