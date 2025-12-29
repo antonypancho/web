@@ -355,7 +355,7 @@
       ${totalApartados > 0 ? `<span>Apartados pendientes: <b class="apartado-count">${totalApartados}</b></span>` : ''}
       <span>
         Monto total registrado: <b>${totalMonto} Bs</b>
-        ${totalMonto !== (cartonesOrdenados.length + totalPendientes) * 100 
+        ${totalMonto !== (cartonesOrdenados.length + totalPendientes) * 75 
           ? ' <b style="color:#ff6b6b;">⚠ Inconsistencia</b>' 
           : ''}
       </span>
@@ -623,3 +623,4 @@
 </div> 
 </body>
 </html>
+
