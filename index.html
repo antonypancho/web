@@ -3,237 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Compra de Cartones de Bingo (1.1 - Manejo de Pendientes)</title>
+  <title>Bingo Mágico - Venta de Cartones</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet">
 
   <style>
-    /* --- Reseteo Básico y Tema Base --- */
-    * {
-      box-sizing: border-box; /* Mejor manejo de padding y border */
-    }
-
+    * { box-sizing: border-box; }
+    
     body {
-      /* Fondo mágico con gradiente sutil */
       background: linear-gradient(135deg, #0b021a 0%, #121212 100%);
-      color: #f0f0f0;
-      font-family: 'Nunito', Arial, sans-serif;
-      margin: 0;
-      padding: 20px;
-      min-height: 100vh;
+      color: #f0f0f0; font-family: 'Nunito', sans-serif;
+      margin: 0; padding: 20px; min-height: 100vh;
     }
 
     /* --- Encabezado --- */
-    .header {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 25px;
-      text-align: center;
+    .header { 
+      display: flex; flex-direction: column; align-items: center; 
+      position: relative; gap: 10px; margin-bottom: 30px; 
     }
+    .logo-mago { font-size: 50px; margin-bottom: 5px; } 
+    h1 { color: #ffffff; text-shadow: 0 0 15px rgba(255,255,255,0.4); font-size: 2.2em; margin: 0; }
 
-    h1 {
-      margin: 0;
-      color: #ffffff;
-      /* Sombra de texto para un leve brillo */
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-      font-size: 1.8em;
+    .registro-nav-btn {
+      background-color: #37474F; color: #fdd835; border: 1px solid #fdd835;
+      padding: 8px 16px; border-radius: 8px; font-weight: 900; cursor: pointer;
+      transition: 0.3s;
     }
+    .registro-nav-btn:hover { background-color: #fdd835; color: #000; }
 
-    button.registro-btn {
-      width: auto;
-      background-color: #3a3a3a; /* Un gris más sutil */
-      border: 1px solid #555;
-      color: #f0f0f0;
-      padding: 5px 10px;
-      font-weight: bold;
-      font-size: 0.85em;
-      border-radius: 5px;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: all 0.3s ease;
+    /* --- Formulario --- */
+    form { 
+      max-width: 600px; margin: 0 auto 30px auto; 
+      background: rgba(255,255,255,0.05); padding: 25px; 
+      border-radius: 20px; border: 1px solid #333; 
     }
-    
-    button.registro-btn:hover {
-      background-color: #4a4a4a;
-      border-color: #777;
+    label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: #fdd835; font-size: 1.1em; }
+    input { 
+      width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #444; 
+      background: #1e1e1e; color: #fff; font-weight: 900; font-size: 1.2em;
     }
+    input#monto { background-color: #000; color: #fdd835; text-align: center; font-size: 1.8em; border-color: #fdd835; }
 
-    /* --- Formulario Moderno --- */
-    form {
-      max-width: 500px; /* Limita el ancho del form en pantallas grandes */
-      margin: 0 auto 30px auto; /* Centra el formulario */
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      margin-bottom: 5px;
-      font-weight: bold;
-      color: #aaa;
-    }
-
-    input[type="text"] {
-      width: %;
-      padding: 12px;
-      border-radius: 6px;
-      border: 1px solid #444;
-      background: #1e1e1e; /* Un poco más claro que el fondo */
-      color: #f0f0f0;
-      font-weight: bold;
-      font-size: 1em;
-      font-family: 'Nunito', Arial, sans-serif;
-      transition: all 0.3s ease;
-    }
-
-    /* Estilo para el nuevo campo de pendientes */
-    input#pendientes {
-        background-color: #fdd835;
-        color: #121212;
-        border-color: #fbc02d;
-    }
-
-    input[type="text"]:focus {
-      /* Brillo dorado al seleccionar */
-      outline: none;
-      border-color: #fdd835;
-      box-shadow: 0 0 15px rgba(253, 216, 53, 0.5);
-    }
-    
-    input[type="text"]#monto {
-      background-color: #222;
-      color: #fdd835; /* Resalta el monto en dorado */
-      font-size: 1.1em;
-    }
-
-    /* Botón de Compra "Mágico" */
     button[type="submit"] {
-      margin-top: 25px;
-      width: %;
-      padding: 12px;
-      background: linear-gradient(45deg, #fdd835, #fbc02d); /* Gradiente dorado */
-      border: none;
-      border-radius: 6px;
-      color: #121212; /* Texto oscuro para contrastar con dorado */
-      font-weight: bold;
-      font-size: 1.2em;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(253, 216, 53, 0.2);
+      margin-top: 25px; width: 100%; padding: 18px; 
+      background: linear-gradient(45deg, #fdd835, #fbc02d);
+      border: none; border-radius: 10px; color: #000; font-weight: 900; 
+      font-size: 1.4em; cursor: pointer; transition: 0.3s;
     }
 
-    button[type="submit"]:hover {
-      background: linear-gradient(45deg, #fbc02d, #f9a825);
-      box-shadow: 0 6px 20px rgba(253, 216, 53, 0.4);
-      transform: translateY(-2px); /* Efecto de levantar */
+    #copyImageBtn {
+        max-width: 600px; display: block; margin: 15px auto;
+        background-color: #00c853; color: white; border: none;
+        padding: 15px; border-radius: 10px; cursor: pointer; 
+        font-weight: 900; font-size: 1.1em; width: 100%;
     }
 
-    /* Estilo para el botón cuando está deshabilitado */
-    button[type="submit"]:disabled {
-        background: #555;
-        color: #999;
-        cursor: not-allowed;
-        box-shadow: none;
-        transform: none;
-    }
-
-    /* Botón de Descarga */
-    #downloadImageBtn {
-        max-width: 500px;
-        margin: 20px auto; /* Centra y da espacio */
-        display: block; /* Para que margin auto funcione */
-        padding: 10px 15px;
-        background-color: #2196f3; /* Azul para diferenciar */
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s ease, transform 0.2s ease;
-    }
-    #downloadImageBtn:hover {
-        background-color: #0d8ed1;
-        transform: translateY(-1px);
-    }
-
-
-    /* --- Panel de Cartones Responsivo y Mágico --- */
+    /* --- Tabla de 20 Columnas --- */
+    .tabla-scroll { width: 100%; overflow-x: auto; margin-top: 30px; padding-bottom: 15px; }
     #panel-cartones {
-      margin-top: 30px;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(45px, 1fr));
-      gap: 8px; /* Un poco más de espacio */
-      margin-left: auto;
-      margin-right: auto;
-      background-color: rgb(255, 255, 255); /* Fondo blanco */
-      padding: 15px;
-      border-radius: 12px;
-      border: 1px solid #333;
-      max-width: 1200px; /* Límite para pantallas muy anchas */
+      display: grid; grid-template-columns: repeat(20, 1fr); 
+      gap: 8px; background-color: #ffffff; padding: 20px; border-radius: 15px;
+      min-width: 1400px; margin: 0 auto;
     }
 
     .carton-btn {
-      aspect-ratio: 1 / 1; 
-      background-color: #ffffff; /* Fondo blanco */
-      border: 1px solid transparent; /* Borde transparente (invisible) */
-      color: #000000; /* Texto negro */
-      font-weight: 900; /* Números más gruesos */
-      font-size: 1.4em; /* Números más grandes */
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.3s ease-in-out;
-      border-radius: 6px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 0;
-      line-height: 1;
+      aspect-ratio: 1/1; background: #fff; border: 2px solid #ddd;
+      color: #000; font-weight: 900; font-size: 1.8em; 
+      cursor: pointer; border-radius: 8px; transition: 0.2s;
+      display: flex; align-items: center; justify-content: center;
     }
+    .carton-btn.selected { background-color: #fdd835; border-color: #000; transform: scale(1.1); z-index: 5; }
+    .carton-btn.vendido { opacity: 0.05; pointer-events: none; }
 
-    .carton-btn:hover:not(.vendido):not(.selected) {
-      background-color: #f0f0f0; /* Un gris muy claro para el hover */
-      border-color: transparent; /* Mantenemos el borde invisible */
-      color: #000000; /* Texto sigue negro */
+    @media (min-width: 600px) {
+      .header { flex-direction: row; justify-content: center; }
+      .registro-nav-btn { position: absolute; right: 0; }
     }
-
-    .carton-btn.selected {
-      background-color: #fdd835;
-      color: #121212; /* Texto oscuro para el fondo dorado */
-      border-color: #fbc02d; /* ¡Aquí el borde SÍ aparece! */
-      transform: scale(1.1); /* Resalta el botón */
-      box-shadow: 0 0 15px rgba(253, 216, 53, 0.6);
-      z-index: 10; /* Asegura que esté por encima de otros */
-    }
-
-    .carton-btn.vendido {
-      background-color: transparent;
-      color: transparent; /* Oculta el número */
-      border-color: transparent; /* Oculta el borde */
-      opacity: 0.1; /* Lo hace muy sutil, como un fantasma */
-      cursor: default;
-      pointer-events: none;
-      text-decoration: none; /* Quita el tachado */
-      box-shadow: none; /* Se asegura de quitar cualquier sombra */
-    }
-
   </style>
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // Tu configuración de Firebase
+    // DATOS ACTUALIZADOS DE FIREBASE
     const firebaseConfig = {
       apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
       authDomain: "bingomagic.firebaseapp.com",
       projectId: "bingomagic",
       storageBucket: "bingomagic.firebasestorage.app",
       messagingSenderId: "239927101364",
-      appId: "1:239927101364:web:57e068b2564c63a194e1",
+      appId: "1:239927101364:web:7557e068b2564c63a194e1",
       measurementId: "G-0GJL6DJCEB"
     };
     firebase.initializeApp(firebaseConfig);
@@ -243,43 +104,42 @@
 <body>
 
 <div class="header">
-  <h1>✨ Compra de Cartones de Bingo</h1>
-  <button class="registro-btn" onclick="window.location.href='registro.html'">Registro</button>
+  <div class="logo-mago">🧙‍♂️</div> 
+  <h1>✨ ¡¡¡BINGO MÁGIC NIGHT!!!! (500)</h1>
+  <button class="registro-nav-btn" onclick="window.location.href='registro.html'">Ver Registros</button>
 </div>
 
 <form id="compraForm">
-  <label for="nombre">Nombre del jugador:</label>
-  <input type="text" id="nombre" name="nombre" required />
+  <label>Nombre del Jugador:</label>
+  <input type="text" id="nombre" required placeholder="Nombre del cliente" />
 
-  <label for="cartonesSeleccionados">Cartones seleccionados:</label>
-  <input type="text" id="cartonesSeleccionados" name="cartonesSeleccionados" placeholder="Selecciona o escribe los cartones separados por coma" />
+  <label>Cartones (Toca abajo o pega lista):</label>
+  <input type="text" id="cartonesSeleccionados" placeholder="Solo números disponibles del 1 al 530" />
 
-  <label for="pendientes">Cartones Pendientes (si faltan):</label>
-  <input type="text" id="pendientes" name="pendientes" value="0" />
+  <label>Cartones Pendientes:</label>
+  <input type="number" id="pendientes" value="0" min="0" />
 
-  <label for="referencia">Referencia de Pago:</label>
-  <input type="text" id="referencia" name="referencia" required />
+  <label>Referencia de Pago:</label>
+  <input type="text" id="referencia" required />
 
-  <label for="monto">Monto (Bs):</label>
-  <input type="text" id="monto" name="monto" readonly value="0" />
+  <label>Monto Total (Bs):</label>
+  <input type="text" id="monto" readonly value="0" />
 
-  <button type="submit" id="comprarBtn">COMPRAR</button>
+  <button type="submit" id="comprarBtn">REGISTRAR COMPRA</button>
 </form>
 
-<button id="downloadImageBtn">Descargar Imagen de Cartones Disponibles</button>
+<button id="copyImageBtn">📸 COPIAR TABLA PARA WHATSAPP</button>
 
-<div id="panel-cartones"></div>
+<div class="tabla-scroll">
+  <div id="panel-cartones"></div>
+</div>
 
 <script>
+  const TOTAL_CARTONES = 500;
   const PRECIO_CARTON = 100;
   const panel = document.getElementById('panel-cartones');
   const seleccionadosInput = document.getElementById('cartonesSeleccionados');
   const montoInput = document.getElementById('monto');
-  const form = document.getElementById('compraForm');
-  const downloadImageBtn = document.getElementById('downloadImageBtn');
-  const comprarBtn = document.getElementById('comprarBtn');
-  
-  // ********** ¡NUEVA REFERENCIA! **********
   const pendientesInput = document.getElementById('pendientes');
 
   let seleccionados = new Set();
@@ -287,20 +147,22 @@
 
   async function cargarVendidos() {
     try {
-      const snapshot = await db.collection('registrosCartones').get();
-      snapshot.forEach(doc => vendidos.add(parseInt(doc.id)));
-      marcarVendidosUI();
-    } catch (error) { console.error("Error cargando cartones vendidos:", error); }
+      const snap = await db.collection('registrosCartones').get();
+      snap.forEach(doc => {
+        const n = parseInt(doc.id);
+        vendidos.add(n);
+        const btn = document.querySelector(`[data-numero="${n}"]`);
+        if (btn) btn.classList.add('vendido');
+      });
+    } catch (e) { console.error(e); }
   }
 
-  for (let i = 1; i <= 500; i++) {
+  for (let i = 1; i <= TOTAL_CARTONES; i++) {
     const btn = document.createElement('button');
-    btn.type = 'button';
     btn.className = 'carton-btn';
     btn.textContent = i;
     btn.dataset.numero = i;
-
-    btn.addEventListener('click', () => {
+    btn.onclick = () => {
       if (vendidos.has(i)) return;
       if (seleccionados.has(i)) {
         seleccionados.delete(i);
@@ -309,211 +171,106 @@
         seleccionados.add(i);
         btn.classList.add('selected');
       }
-      actualizarCampos();
-    });
+      actualizarInputManual();
+    };
     panel.appendChild(btn);
   }
 
-  function marcarVendidosUI() {
-    Array.from(panel.children).forEach(btn => {
-      const n = parseInt(btn.dataset.numero);
-      if (vendidos.has(n)) btn.classList.add('vendido');
-    });
+  function actualizarInputManual() {
+    seleccionadosInput.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
+    actualizarTotales();
   }
 
-  // ********** ¡FUNCIÓN ACTUALIZADA! **********
-  // Ahora calcula el monto usando los cartones seleccionados + los pendientes
-  function actualizarCampos() {
-    const lista = Array.from(seleccionados).sort((a, b) => a - b);
-    seleccionadosInput.value = lista.join(', ');
+  // LÓGICA DE FILTRADO ESTRICTO
+  seleccionadosInput.oninput = function() {
+    this.value = this.value.replace(/[^0-9,\-\/ ]/g, ''); 
     
-    // Nueva lógica de monto
-    const numPendientes = parseInt(pendientesInput.value) || 0;
-    montoInput.value = ((lista.length + numPendientes) * PRECIO_CARTON).toString();
-  }
-
-  seleccionadosInput.addEventListener('input', () => {
-    // Validar números entre 1 y 500 (tu lógica original de 0 no funcionaría aquí)
-    const valores = seleccionadosInput.value.split(',')
-      .map(s => parseInt(s.trim()))
-      .filter(n => !isNaN(n) && n >= 1 && n <= 500 && !vendidos.has(n));
-      
-    seleccionados = new Set(valores);
+    const nums = this.value.match(/\d+/g) || [];
+    seleccionados.clear();
     
-    Array.from(panel.children).forEach(btn => {
-      const n = parseInt(btn.dataset.numero);
-      if (vendidos.has(n)) return;
-      btn.classList.toggle('selected', seleccionados.has(n));
+    document.querySelectorAll('.carton-btn').forEach(b => { 
+        if(!b.classList.contains('vendido')) b.classList.remove('selected'); 
     });
-    actualizarCampos();
-  });
 
-  // ********** ¡NUEVO LISTENER! **********
-  // Si se cambia el número de pendientes, se actualiza el monto total
-  pendientesInput.addEventListener('input', actualizarCampos);
+    let huboVendidos = false;
 
+    nums.forEach(str => {
+      const n = parseInt(str);
+      if (n >= 1 && n <= TOTAL_CARTONES) {
+        if (!vendidos.has(n)) {
+          seleccionados.add(n);
+          const btn = document.querySelector(`[data-numero="${n}"]`);
+          if (btn) btn.classList.add('selected');
+        } else {
+          huboVendidos = true;
+        }
+      }
+    });
 
-  // ********** ¡FUNCIÓN DE SUBMIT ACTUALIZADA! **********
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    
-    const numPendientes = parseInt(pendientesInput.value) || 0;
-
-    // Validación: no se puede comprar si no hay ni seleccionados ni pendientes
-    if (seleccionados.size === 0 && numPendientes === 0) {
-      alert("Por favor selecciona al menos un cartón o indica un cartón pendiente.");
-      return;
+    if (huboVendidos) {
+      this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
     }
     
-    const nombre = form.nombre.value.trim();
-    const referencia = form.referencia.value.trim();
-    if (!nombre || !referencia) {
-      alert("Completa todos los campos.");
-      return;
-    }
+    actualizarTotales();
+  };
 
-    comprarBtn.disabled = true;
-    comprarBtn.textContent = 'Procesando...';
+  function actualizarTotales() {
+    const p = parseInt(pendientesInput.value) || 0;
+    montoInput.value = (seleccionados.size + p) * PRECIO_CARTON;
+  }
+  pendientesInput.oninput = actualizarTotales;
 
-    try {
-      // Validar que los cartones SELECCIONADOS no estén ya vendidos
-      const conflictos = [];
-      for (let n of seleccionados) {
-        const doc = await db.collection('registrosCartones').doc(n.toString()).get();
-        if (doc.exists) conflictos.push(n);
-      }
-      
-      // ¡MANEJO DE CONFLICTOS!
-      if (conflictos.length > 0) {
-          alert("¡Conflicto! El cartón " + conflictos.join(', ') + " ya fue vendido. Por favor, deselecciónalo y escoge un reemplazo.");
-          // Deseleccionamos los cartones en conflicto
-          conflictos.forEach(n => {
-              seleccionados.delete(n);
-              const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
-              if (btn) btn.classList.remove('selected');
-          });
-          actualizarCampos();
-          // No lanzamos error, solo reactivamos el botón en 'finally'
-          // para que el admin pueda escoger el reemplazo.
-          return; 
-      }
-
-      const batch = db.batch();
-      
-      // Se registran SOLO los cartones seleccionados (los pendientes no)
-      seleccionados.forEach(n => {
-        const docRef = db.collection('registrosCartones').doc(n.toString());
-        batch.set(docRef, { nombre });
-      });
-
-      // Se guarda el registro de pago con la info de pendientes
-      const pagoRef = db.collection('registrosPagos').doc();
-      batch.set(pagoRef, {
-        monto: montoInput.value,
-        referencia,
-        nombre,
-        cartones: Array.from(seleccionados).sort((a, b) => a - b),
-        pendientes: numPendientes, // ¡CAMPO NUEVO GUARDADO!
-        timestamp: new Date()
-      });
-
-      await batch.commit();
-
-      // Nuevo mensaje de Alerta
-      let alertaMensaje = `Compra realizada:\nNombre: ${nombre}\nCartones: ${Array.from(seleccionados).sort((a,b)=>a-b).join(', ')}\nReferencia: ${referencia}\nMonto: ${montoInput.value} Bs`;
-      
-      if (numPendientes > 0) {
-          alertaMensaje += `\n\nATENCIÓN: Quedan ${numPendientes} cartones PENDIENTES por asignar.`;
-      }
-      alert(alertaMensaje);
-
-
-      seleccionados.forEach(n => {
-        vendidos.add(n);
-        const btn = Array.from(panel.children).find(b => Number(b.dataset.numero) === n);
-        if (btn) btn.classList.add('vendido');
-      });
-
-      form.reset();
-      seleccionados.clear();
-      actualizarCampos(); // Esto pondrá el monto y pendientes en 0
-
-    } catch (error) {
-        console.error("Error guardando en Firestore:", error);
-        alert("Ocurrió un error al guardar la compra. Intenta de nuevo.");
-    } finally {
-      comprarBtn.disabled = false;
-      comprarBtn.textContent = 'COMPRAR';
-    }
-  });
-
-
-  /* --- Lógica de Descarga de Imagen (Sin cambios funcionales, solo estilo) --- */
-  downloadImageBtn.addEventListener('click', async () => {
+  document.getElementById('copyImageBtn').onclick = async () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    const cols = 20;
+    const rows = Math.ceil(TOTAL_CARTONES / cols);
+    const cellSize = 70; const pad = 10;
+    canvas.width = cols * (cellSize + pad) + pad;
+    canvas.height = 100 + rows * (cellSize + pad) + pad;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#000'; ctx.font = 'bold 35px Nunito'; ctx.textAlign = 'center';
+    ctx.fillText('CARTONES DISPONIBLES', canvas.width/2, 60);
 
-    const totalCartones = 500;
-    const cols = 15;
-    const rows = Math.ceil(totalCartones / cols);
-    const cellWidth = 60;
-    const cellHeight = 60;
-    const padding = 10;
-    const titleHeight = 50;
-
-    canvas.width = cols * (cellWidth + padding) + padding;
-    canvas.height = titleHeight + rows * (cellHeight + padding) + padding;
-
-    // Fondo del canvas (blanco, como tu panel)
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Título de la imagen (negro)
-    ctx.font = 'bold 24px Nunito';
-    ctx.fillStyle = '#000000'; 
-    ctx.textAlign = 'center';
-    ctx.fillText('Cartones de Bingo Disponibles', canvas.width / 2, 35);
-
-    for (let i = 1; i <= totalCartones; i++) {
-      const col = (i - 1) % cols;
-      const row = Math.floor((i - 1) / cols);
-
-      const x = col * (cellWidth + padding) + padding;
-      const y = titleHeight + row * (cellHeight + padding) + padding;
-
-      if (!vendidos.has(i)) {
-        
-        ctx.fillStyle = '#ffffff'; 
-        ctx.strokeStyle = '#cccccc'; // Borde gris claro
-        ctx.lineWidth = 1;
-        ctx.fillRect(x, y, cellWidth, cellHeight);
-        ctx.strokeRect(x, y, cellWidth, cellHeight);
-
-        ctx.font = '900 24px Nunito'; // Fuente gruesa
-        ctx.fillStyle = '#000000'; // Texto negro
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(i.toString(), x + cellWidth / 2, y + cellHeight / 2);
-      }
+    for (let i = 1; i <= TOTAL_CARTONES; i++) {
+      if (vendidos.has(i)) continue;
+      const col = (i - 1) % cols; const row = Math.floor((i - 1) / cols);
+      const x = col * (cellSize + pad) + pad; const y = 100 + row * (cellSize + pad) + pad;
+      ctx.strokeStyle = '#ddd'; ctx.strokeRect(x, y, cellSize, cellSize);
+      ctx.fillStyle = '#000'; ctx.font = '900 24px Nunito'; ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle'; ctx.fillText(i.toString(), x + cellSize/2, y + cellSize/2);
     }
+    canvas.toBlob(async blob => {
+      try {
+        await navigator.clipboard.write([new ClipboardItem({'image/png': blob})]);
+        alert("✅ Tabla copiada con éxito.");
+      } catch (e) { alert("❌ Error: Necesitas HTTPS para copiar."); }
+    });
+  };
 
-    const image = canvas.toDataURL('image/png');
-    const link = document.createElement('a');
-    link.download = 'cartones_bingo_disponibles.png';
-    link.href = image;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  });
+  document.getElementById('compraForm').onsubmit = async e => {
+    e.preventDefault();
+    const btn = document.getElementById('comprarBtn');
+    btn.disabled = true;
+    try {
+      const batch = db.batch();
+      const nombre = document.getElementById('nombre').value;
+      seleccionados.forEach(n => batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre }));
+      batch.set(db.collection('registrosPagos').doc(), {
+        nombre, monto: montoInput.value, referencia: document.getElementById('referencia').value,
+        cartones: Array.from(seleccionados), pendientes: parseInt(pendientesInput.value) || 0,
+        timestamp: new Date()
+      });
+      await batch.commit();
+      alert("¡Registro guardado!");
+      location.reload();
+    } catch (err) {
+      alert("Error al guardar. Revisa tus reglas en Firebase.");
+      btn.disabled = false;
+    }
+  };
 
   cargarVendidos();
 </script>
-
 </body>
 </html>
-
-
-
-
-
-
