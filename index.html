@@ -41,13 +41,13 @@
     }
     label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: #fdd835; font-size: 1.1em; }
     input { 
-      width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #444; 
+      width: %; padding: 12px; border-radius: 10px; border: 2px solid #444; 
       background: #1e1e1e; color: #fff; font-weight: 900; font-size: 1.2em;
     }
     input#monto { background-color: #000; color: #fdd835; text-align: center; font-size: 1.8em; border-color: #fdd835; }
 
     button[type="submit"] {
-      margin-top: 25px; width: 100%; padding: 18px; 
+      margin-top: 25px; width: %; padding: 18px; 
       background: linear-gradient(45deg, #fdd835, #fbc02d);
       border: none; border-radius: 10px; color: #000; font-weight: 900; 
       font-size: 1.4em; cursor: pointer; transition: 0.3s;
@@ -57,11 +57,11 @@
         max-width: 600px; display: block; margin: 15px auto;
         background-color: #00c853; color: white; border: none;
         padding: 15px; border-radius: 10px; cursor: pointer; 
-        font-weight: 900; font-size: 1.1em; width: 100%;
+        font-weight: 900; font-size: 1.1em; width: %;
     }
 
     /* --- Tabla de 20 Columnas --- */
-    .tabla-scroll { width: 100%; overflow-x: auto; margin-top: 30px; padding-bottom: 15px; }
+    .tabla-scroll { width: %; overflow-x: auto; margin-top: 30px; padding-bottom: 15px; }
     #panel-cartones {
       display: grid; grid-template-columns: repeat(20, 1fr); 
       gap: 8px; background-color: #ffffff; padding: 20px; border-radius: 15px;
@@ -136,7 +136,7 @@
 
 <script>
   const TOTAL_CARTONES = 500;
-  const PRECIO_CARTON = 100;
+  const PRECIO_CARTON = 150;
   const panel = document.getElementById('panel-cartones');
   const seleccionadosInput = document.getElementById('cartonesSeleccionados');
   const montoInput = document.getElementById('monto');
@@ -274,3 +274,4 @@
 </script>
 </body>
 </html>
+
