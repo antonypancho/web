@@ -77,7 +77,7 @@
   <button type="submit" id="comprarBtn">REGISTRAR COMPRA</button>
 </form>
 
-<button id="copyImageBtn">📸 COPIAR TABLA + TEXTO PARA WHATSAPP</button>
+<button id="copyImageBtn">📸 COPIAR TABLA PARA WHATSAPP</button>
 
 <div class="tabla-scroll">
   <div id="panel-cartones"></div>
@@ -110,7 +110,6 @@
     });
   }
 
-  // Generar Tablero
   for (let i = 1; i <= TOTAL_CARTONES; i++) {
     const btn = document.createElement('button');
     btn.className = 'carton-btn';
@@ -131,33 +130,19 @@
     actualizarTotales();
   }
 
-  // --- LÓGICA DE VALIDACIÓN MULTI-SEPARADOR Y FILTRADO ---
   seleccionadosInput.oninput = function() {
-    // 1. Guardar la posición del cursor para que no "salte" al escribir
-    const start = this.selectionStart;
-    
-    // 2. Extraer todos los números ignorando el separador usado
     const nums = this.value.match(/\d+/g) || [];
     const nuevoSeleccionados = new Set();
-    let huboVendidoEnEscritura = false;
 
     nums.forEach(str => {
       const n = parseInt(str);
-      if (n >= 1 && n <= TOTAL_CARTONES) {
-        if (!vendidos.has(n)) {
-          nuevoSeleccionados.add(n);
-        } else {
-          huboVendidoEnEscritura = true;
-        }
+      if (n >= 1 && n <= TOTAL_CARTONES && !vendidos.has(n)) {
+        nuevoSeleccionados.add(n);
       }
     });
 
     seleccionados = nuevoSeleccionados;
-
-    // 3. Si detectamos un número vendido, limpiamos el input para mostrar solo los válidos
-    if (huboVendidoEnEscritura) {
-      this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
-    }
+    this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
 
     actualizarVisualTablero();
     actualizarTotales();
@@ -169,31 +154,55 @@
   }
   pendientesInput.oninput = actualizarTotales;
 
-  // Función Copiar
+  // --- COPIAR SOLO LA IMAGEN ---
   document.getElementById('copyImageBtn').onclick = async () => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
-    const cols = 20; const rows = Math.ceil(TOTAL_CARTONES / cols);
-    const cellSize = 75; const pad = 5;
+
+    const cols = 20;
+    const rows = Math.ceil(TOTAL_CARTONES / cols);
+    const cellSize = 75;
+    const pad = 5;
+
     canvas.width = cols * (cellSize + pad) + pad;
     canvas.height = 100 + rows * (cellSize + pad) + pad;
-    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#000'; ctx.font = 'bold 35px Nunito'; ctx.textAlign = 'center';
-    ctx.fillText('CARTONES DISPONIBLES', canvas.width/2, 60);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#000';
+    ctx.font = 'bold 35px Nunito';
+    ctx.textAlign = 'center';
+    ctx.fillText('CARTONES DISPONIBLES', canvas.width / 2, 60);
+
     for (let i = 1; i <= TOTAL_CARTONES; i++) {
       if (vendidos.has(i)) continue;
-      const col = (i - 1) % cols; const row = Math.floor((i - 1) / cols);
-      const x = col * (cellSize + pad) + pad; const y = 100 + row * (cellSize + pad) + pad;
-      ctx.strokeStyle = '#eee'; ctx.strokeRect(x, y, cellSize, cellSize);
-      ctx.fillStyle = '#000'; ctx.font = '900 28px Nunito'; ctx.textBaseline = 'middle';
-      ctx.fillText(i.toString(), x + cellSize/2, y + cellSize/2);
+
+      const col = (i - 1) % cols;
+      const row = Math.floor((i - 1) / cols);
+      const x = col * (cellSize + pad) + pad;
+      const y = 100 + row * (cellSize + pad) + pad;
+
+      ctx.strokeStyle = '#eee';
+      ctx.strokeRect(x, y, cellSize, cellSize);
+
+      ctx.fillStyle = '#000';
+      ctx.font = '900 28px Nunito';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(i.toString(), x + cellSize / 2, y + cellSize / 2);
     }
+
     canvas.toBlob(async blob => {
       try {
-        const data = [new ClipboardItem({'image/png': blob, 'text/plain': new Blob([textoMensaje], {type:'text/plain'})})];
-        await navigator.clipboard.write(data);
-        alert("✅ Imagen y Texto copiados.");
-      } catch (e) { alert("Error: Usa HTTPS."); }
+        await navigator.clipboard.write([
+          new ClipboardItem({ "image/png": blob })
+        ]);
+
+        alert("📸 Imagen copiada al portapapeles.");
+      } catch (e) {
+        alert("❌ Error al copiar. Usa HTTPS y Chrome.");
+        console.error(e);
+      }
     });
   };
 
@@ -219,4 +228,3 @@
 </script>
 </body>
 </html>
-
