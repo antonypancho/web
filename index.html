@@ -188,7 +188,6 @@
       ctx.fillStyle = '#000'; ctx.font = '900 28px Nunito'; ctx.textBaseline = 'middle';
       ctx.fillText(i.toString(), x + cellSize/2, y + cellSize/2);
     }
-    const textoMensaje = "CARTONES DISPONIBLES: HAZ ZOOM PARA MIRARLOS 🔎✨";
     canvas.toBlob(async blob => {
       try {
         const data = [new ClipboardItem({'image/png': blob, 'text/plain': new Blob([textoMensaje], {type:'text/plain'})})];
@@ -220,3 +219,4 @@
 </script>
 </body>
 </html>
+
