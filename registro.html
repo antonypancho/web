@@ -198,7 +198,7 @@
   }
 
   async function cargarRegistros() {
-    const registros = {};
+    let registros = {};
     let totalMonto = 0;
     let totalPendientes = 0; 
     let totalApartados = 0;
@@ -206,14 +206,18 @@
     const referencias = {};
     const duplicadas = new Set();
 
-    const snapshotCartones = await db.collection('registrosCartones').get();
-    snapshotCartones.forEach(doc => { registros[doc.id] = doc.data().nombre; });
-
-    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
+    // 🔥 LISTA DE JUGADORES EN TIEMPO REAL
+    db.collection('registrosCartones').onSnapshot(snapshotCartones => {
+        registros = {};
+        snapshotCartones.forEach(doc => {
+            registros[doc.id] = doc.data().nombre;
+        });
+        actualizarTablaJugadores(registros);
+    });
 
     const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
 
-    // 🔥 PRIMER PASO: detectar duplicados
+    // 🔥 DETECTAR DUPLICADOS
     snapshotPagos.forEach(doc => {
         const ref = doc.data().referencia;
         if (!referencias[ref]) referencias[ref] = 0;
@@ -281,12 +285,29 @@
     });
 
     document.getElementById('resumen').innerHTML = `
-      <span>Vendidos: <b>${cartonesOrdenados.length}</b></span>
-      <span>Faltantes: <b>${510 - cartonesOrdenados.length}</b></span>
+      <span>Vendidos: <b>${Object.keys(registros).length}</b></span>
+      <span>Faltantes: <b>${510 - Object.keys(registros).length}</b></span>
       ${totalPendientes > 0 ? `<span>Pendientes: <b>${totalPendientes}</b></span>` : ''}
       ${totalApartados > 0 ? `<span>Apartados: <b class="apartado-count">${totalApartados}</b></span>` : ''}
       <span>Monto total: <b>${totalMonto} Bs</b></span>
     `;
+  }
+
+  // 🔥 ACTUALIZAR TABLA DE JUGADORES EN TIEMPO REAL
+  function actualizarTablaJugadores(registros) {
+    const tbody = document.querySelector('#tablaCartones tbody');
+    tbody.innerHTML = "";
+
+    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b)=>a-b);
+
+    cartonesOrdenados.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${c}</td>
+            <td>${registros[c]}</td>
+        `;
+        tbody.appendChild(tr);
+    });
   }
 
   // ✔️ VERIFICACIÓN BANCARIA
@@ -425,7 +446,7 @@
       const filas = tbody.querySelectorAll('tr');
       filas.forEach(fila => {
         const celdas = fila.querySelectorAll('td');
-        const filaTexto = Array.from(celdas)
+                const filaTexto = Array.from(celdas)
           .filter((c, idx) => idx < celdas.length - 1)
           .map(c => c.textContent.trim())
           .join('\t');
@@ -438,7 +459,7 @@
     const textoApartados = tablaAtexto(document.getElementById('tablaApartados'));
     const textoCartones = tablaAtexto(document.getElementById('tablaCartones'));
 
-        const finalTexto =
+    const finalTexto =
       '== PAGOS CONFIRMADOS ==\n' +
       textoPagos +
       '\n== APARTADOS ==\n' +
@@ -532,5 +553,3 @@
 </div>
 </body>
 </html>
-
-
