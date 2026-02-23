@@ -282,7 +282,7 @@
 
     document.getElementById('resumen').innerHTML = `
       <span>Vendidos: <b>${cartonesOrdenados.length}</b></span>
-      <span>Faltantes: <b>${630 - cartonesOrdenados.length}</b></span>
+      <span>Faltantes: <b>${510 - cartonesOrdenados.length}</b></span>
       ${totalPendientes > 0 ? `<span>Pendientes: <b>${totalPendientes}</b></span>` : ''}
       ${totalApartados > 0 ? `<span>Apartados: <b class="apartado-count">${totalApartados}</b></span>` : ''}
       <span>Monto total: <b>${totalMonto} Bs</b></span>
@@ -347,7 +347,7 @@
     const nuevoPendienteTexto = prompt("Cantidad de pendientes:", pendientesActuales);
     if (nuevoPendienteTexto === null) return; 
 
-    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 630);
+    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 510);
     const nuevosPendientes = parseInt(nuevoPendienteTexto) || 0;
 
     const snapshot = await db.collection('registrosCartones').get();
@@ -462,7 +462,7 @@
 <body>
 <div class="content-wrapper">
     <header>
-      <h1>Registro de Cartones (630)</h1>
+      <h1>Registro de Cartones (510)</h1>
       <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
     </header>
 
@@ -532,4 +532,5 @@
 </div>
 </body>
 </html>
+
 
