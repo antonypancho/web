@@ -9,6 +9,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet">
 
+  <!-- html2canvas para copiar imagen -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
   <style>
     * { box-sizing: border-box; }
     body {
@@ -86,7 +89,7 @@
   <input type="number" id="pendientes" value="0" min="0" />
 
   <label>Referencia de Pago:</label>
-  <input type="text" id="referencia" required maxlength="6" placeholder="6 dígitos" />
+  <input type="text" id="referencia" required maxlength="6" placeholder="6 dígitos o P" />
 
   <label>Monto Total (Bs):</label>
   <input type="text" id="monto" readonly value="0" />
@@ -94,7 +97,7 @@
   <button type="submit" id="comprarBtn">REGISTRAR COMPRA</button>
 </form>
 
-<button id="copyImageBtn">📸 COPIAR TABLA + TEXTO PARA WHATSAPP</button>
+<button id="copyImageBtn">📸 COPIAR TABLERO</button>
 
 <div class="tabla-scroll">
   <div id="panel-cartones"></div>
@@ -119,10 +122,35 @@
     });
   });
 
-  // 🔥 VALIDAR REFERENCIA (solo 6 números)
+  // 🔥 VALIDAR REFERENCIA (6 números o P)
   refInput.addEventListener("input", () => {
-    refInput.value = refInput.value.replace(/\D/g, "").slice(0, 6);
+    let v = refInput.value.toUpperCase();
+
+    if (v === "P") {
+      refInput.value = "P";
+      return;
+    }
+
+    refInput.value = v.replace(/\D/g, "").slice(0, 6);
   });
+
+  // 🔥 COPIAR SOLO IMAGEN
+  document.getElementById("copyImageBtn").onclick = async () => {
+    const panel = document.getElementById("panel-cartones");
+
+    html2canvas(panel, { scale: 2 }).then(async canvas => {
+      canvas.toBlob(async blob => {
+        try {
+          await navigator.clipboard.write([
+            new ClipboardItem({ "image/png": blob })
+          ]);
+          alert("Imagen copiada al portapapeles");
+        } catch (err) {
+          alert("Tu navegador no permite copiar imágenes directamente.");
+        }
+      });
+    });
+  };
 
   // 🔥 BLOQUEAR SUBMIT ACCIDENTAL DESDE AZAR
   document.getElementById("azarBtn").addEventListener("click", e => {
@@ -244,9 +272,10 @@
     const btn = document.getElementById('comprarBtn');
     btn.disabled = true;
 
-    // Validar referencia
-    if (refInput.value.length !== 6) {
-      alert("La referencia debe tener exactamente 6 números.");
+    const ref = refInput.value;
+
+    if (!(ref === "P" || (ref.length === 6 && /^\d+$/.test(ref)))) {
+      alert("La referencia debe ser 6 números o la letra P.");
       btn.disabled = false;
       return;
     }
@@ -260,7 +289,7 @@
       batch.set(db.collection('registrosPagos').doc(), {
         nombre,
         monto: montoInput.value,
-        referencia: refInput.value,
+        referencia: ref,
         cartones: Array.from(seleccionados),
         pendientes: parseInt(pendientesInput.value) || 0,
         timestamp: firebase.firestore.FieldValue.serverTimestamp()
@@ -279,5 +308,3 @@
 </script>
 </body>
 </html>
-
-
