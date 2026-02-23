@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Registro de Compras - Sora</title>
+<title>Registro de Compras - Sora Cartones</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -84,6 +84,26 @@
 
   button.borrar-btn { background-color: #e53935; }
   button.borrar-btn:hover { background-color: #c62828; }
+
+  #btnSubirBanco {
+      background-color: #4CAF50;
+  }
+  #btnSubirBanco:hover {
+      background-color: #66BB6A;
+      transform: translateY(-2px);
+  }
+
+  /* ✔️ DUPLICADOS EN AMARILLO */
+  .referencia-duplicada {
+      color: #ffeb3b !important;
+      font-weight: 900;
+  }
+
+  /* ✔️ VERIFICADOS EN VERDE */
+  .referencia-verificada {
+      color: #00e676 !important;
+      font-weight: 900;
+  }
   
   .resumen { 
       text-align: center; 
@@ -132,7 +152,6 @@
   }
   th { background: #252525; color: #fff; }
 
-  .referencia-duplicada { color: #ff6b6b; font-weight: 700; }
   .carton-pendiente { color: #fdd835; font-weight: 700; margin-left: 8px; }
 
   #gestionPanel { 
@@ -150,23 +169,26 @@
   .delete-btn { background: #e53935; color: white; padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; }
 </style>
 
+<!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
-<script>
-  // CONFIGURACIÓN DE PRECIO
-  const PRECIO_POR_CARTON = 100;
+<!-- XLSX -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-  // CONFIGURACIÓN ACTUALIZADA
+<script>
+  const PRECIO_CARTON = 100; 
+
   const firebaseConfig = {
-    apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
-    authDomain: "bingomagic.firebaseapp.com",
-    projectId: "bingomagic",
-    storageBucket: "bingomagic.firebasestorage.app",
-    messagingSenderId: "239927101364",
-    appId: "1:239927101364:web:7557e068b2564c63a194e1",
-    measurementId: "G-0GJL6DJCEB"
-  };
+      apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
+      authDomain: "bingomagic.firebaseapp.com",
+      projectId: "bingomagic",
+      storageBucket: "bingomagic.firebasestorage.app",
+      messagingSenderId: "239927101364",
+      appId: "1:239927101364:web:7557e068b2564c63a194e1",
+      measurementId: "G-0GJL6DJCEB"
+    };
+
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
@@ -178,87 +200,142 @@
   async function cargarRegistros() {
     const registros = {};
     let totalMonto = 0;
-    const referencias = new Map();
     let totalPendientes = 0; 
     let totalApartados = 0;
+
+    const referencias = {};
+    const duplicadas = new Set();
 
     const snapshotCartones = await db.collection('registrosCartones').get();
     snapshotCartones.forEach(doc => { registros[doc.id] = doc.data().nombre; });
 
     const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b) => a-b);
-    const tbodyCartones = document.querySelector('#tablaCartones tbody');
-    tbodyCartones.innerHTML = '';
-    for (const c of cartonesOrdenados) {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${c}</td><td>${registros[c]}</td>`;
-      tbodyCartones.appendChild(tr);
-    }
 
     const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
+
+    // 🔥 PRIMER PASO: detectar duplicados
+    snapshotPagos.forEach(doc => {
+        const ref = doc.data().referencia;
+        if (!referencias[ref]) referencias[ref] = 0;
+        referencias[ref]++;
+        if (referencias[ref] === 2) duplicadas.add(ref);
+    });
+
     const tbodyPagos = document.querySelector('#tablaPagos tbody');
     const tbodyApartados = document.querySelector('#tablaApartados tbody');
-    
     tbodyPagos.innerHTML = '';
     tbodyApartados.innerHTML = '';
 
     snapshotPagos.forEach(doc => {
       const data = doc.data();
-      const refEsNumerica = esReferenciaNumerica(data.referencia);
-      
-      if (!refEsNumerica) totalApartados++;
+      const ref = data.referencia;
+      const esNum = esReferenciaNumerica(ref);
+      const esDuplicada = duplicadas.has(ref);
+
+      if (!esNum) totalApartados++;
 
       totalMonto += parseFloat(data.monto);
-      const referenciaDuplicada = referencias.has(data.referencia);
-      referencias.set(data.referencia, true);
-      
-      const cartonesStr = (data.cartones && data.cartones.length > 0) ? data.cartones.join(", ") : "";
-      const numPendientes = data.pendientes || 0;
-      totalPendientes += numPendientes; 
-      const pendienteStr = (numPendientes > 0) ? `<span class="carton-pendiente">(+${numPendientes} pnd)</span>` : "";
-      let celdaCartones = (cartonesStr + pendienteStr).trim() || "-";
 
-      const tr = document.createElement('tr');
-      const botonesBase = `
+      const cartonesStr = (data.cartones?.length > 0) ? data.cartones.join(", ") : "";
+      const numPendientes = data.pendientes || 0;
+      totalPendientes += numPendientes;
+
+      const pendienteStr = numPendientes > 0 ? `<span class="carton-pendiente">(+${numPendientes} pnd)</span>` : "";
+      const celdaCartones = (cartonesStr + pendienteStr).trim() || "-";
+
+      const referenciaHTML = `
+        <td class="${esDuplicada ? 'referencia-duplicada' : ''}">
+          ${ref}${esDuplicada ? ' (D)' : ''}
+        </td>
+      `;
+
+      const botones = `
         <button class='edit-btn' onclick='editarPago("${doc.id}", ${JSON.stringify(data.cartones || [])}, ${numPendientes})'>Editar</button>
         <button class='delete-btn' onclick='eliminarPago("${doc.id}", ${JSON.stringify(data.cartones || [])})'>Eliminar</button>
       `;
 
-      if (refEsNumerica) {
-          tr.innerHTML = `
-            <td>${data.monto}</td>
-            <td class="${referenciaDuplicada ? 'referencia-duplicada' : ''}">${data.referencia}</td>
-            <td>${data.nombre || "-"}</td>
-            <td>${celdaCartones}</td>
-            <td>${botonesBase}</td>
-          `;
-          tbodyPagos.appendChild(tr);
+      const tr = document.createElement('tr');
+
+      if (esNum) {
+        tr.innerHTML = `
+          <td>${data.monto}</td>
+          ${referenciaHTML}
+          <td>${data.nombre || "-"}</td>
+          <td>${celdaCartones}</td>
+          <td>${botones}</td>
+        `;
+        tbodyPagos.appendChild(tr);
       } else {
-          tr.innerHTML = `
-            <td>${data.monto}</td>
-            <td class="${referenciaDuplicada ? 'referencia-duplicada' : ''}">${data.referencia}</td>
-            <td>${data.nombre || "-"}</td>
-            <td>${celdaCartones}</td>
-            <td>
-              <button class='edit-btn' onclick='editarApartadoReferencia("${doc.id}", "${data.referencia}")'>Ref</button>
-              ${botonesBase}
-            </td>
-          `;
-          tbodyApartados.appendChild(tr);
+        tr.innerHTML = `
+          <td>${data.monto}</td>
+          ${referenciaHTML}
+          <td>${data.nombre || "-"}</td>
+          <td>${celdaCartones}</td>
+          <td>
+            <button class='edit-btn' style='background:#607D8B' onclick='editarApartadoReferencia("${doc.id}", "${ref}")'>Ref</button>
+            ${botones}
+          </td>
+        `;
+        tbodyApartados.appendChild(tr);
       }
     });
 
     document.getElementById('resumen').innerHTML = `
       <span>Vendidos: <b>${cartonesOrdenados.length}</b></span>
-      <span>Faltantes: <b>${500 - cartonesOrdenados.length}</b></span>
+      <span>Faltantes: <b>${630 - cartonesOrdenados.length}</b></span>
       ${totalPendientes > 0 ? `<span>Pendientes: <b>${totalPendientes}</b></span>` : ''}
       ${totalApartados > 0 ? `<span>Apartados: <b class="apartado-count">${totalApartados}</b></span>` : ''}
       <span>Monto total: <b>${totalMonto} Bs</b></span>
     `;
-
-    if (document.getElementById('gestionPanel').style.display === 'block') {
-      cargarGestionPanel(registros, cartonesOrdenados);
-    }
   }
+
+  // ✔️ VERIFICACIÓN BANCARIA
+  document.addEventListener("DOMContentLoaded", () => {
+      const btnSubirBanco = document.getElementById("btnSubirBanco");
+      const inputBanco = document.getElementById("inputBanco");
+
+      btnSubirBanco.onclick = () => inputBanco.click();
+
+      inputBanco.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const data = await file.arrayBuffer();
+          const workbook = XLSX.read(data);
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+          const referenciasBanco = new Set();
+
+          rows.forEach(row => {
+              if (!row || row.length < 2) return;
+
+              const ref = row[1]?.toString().trim();
+              if (!ref) return;
+
+              const match = ref.match(/(\d{6})$/);
+              if (match) referenciasBanco.add(match[1]);
+          });
+
+          const filas = document.querySelectorAll("#tablaPagos tbody tr");
+
+          filas.forEach(fila => {
+              const celdaRef = fila.children[1];
+              let referencia = celdaRef.textContent.replace("(D)", "").replace("✔️", "").trim();
+
+              const esDuplicada = celdaRef.textContent.includes("(D)");
+
+              if (referenciasBanco.has(referencia)) {
+                  celdaRef.classList.add("referencia-verificada");
+                  celdaRef.innerHTML = `${referencia}${esDuplicada ? ' (D)' : ''} ✔️`;
+              }
+          });
+
+          alert("Verificación completada.");
+      };
+
+      cargarRegistros();
+  });
 
   async function editarPago(pagoId, cartonesActuales, pendientesActuales) {
     const pagoDoc = await db.collection('registrosPagos').doc(pagoId).get();
@@ -270,7 +347,7 @@
     const nuevoPendienteTexto = prompt("Cantidad de pendientes:", pendientesActuales);
     if (nuevoPendienteTexto === null) return; 
 
-    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 500);
+    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= 630);
     const nuevosPendientes = parseInt(nuevoPendienteTexto) || 0;
 
     const snapshot = await db.collection('registrosCartones').get();
@@ -279,33 +356,24 @@
 
     for (let n of nuevosCartones) {
       if (vendidos.has(n) && !cartonesActuales.includes(n)) {
-        alert(`El cartón ${n} ya está vendido a otra persona.`);
+        alert(`El cartón ${n} ya está vendido.`);
         return;
       }
     }
 
-    const nuevoMonto = (nuevosCartones.length + nuevosPendientes) * PRECIO_POR_CARTON;
+    const nuevoMonto = (nuevosCartones.length + nuevosPendientes) * PRECIO_CARTON;
 
     const batch = db.batch();
+    cartonesActuales.forEach(n => { if (!nuevosCartones.includes(n)) batch.delete(db.collection('registrosCartones').doc(n.toString())); });
+    nuevosCartones.forEach(n => { if (!cartonesActuales.includes(n)) batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre: data.nombre }); });
     
-    cartonesActuales.forEach(n => { 
-        if (!nuevosCartones.includes(n)) {
-            batch.delete(db.collection('registrosCartones').doc(n.toString())); 
-        }
-    });
-    
-    nuevosCartones.forEach(n => { 
-        batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre: data.nombre }); 
-    });
-
     batch.update(db.collection('registrosPagos').doc(pagoId), { 
         cartones: nuevosCartones, 
         pendientes: nuevosPendientes,
-        monto: nuevoMonto.toString()
+        monto: nuevoMonto.toString() 
     });
 
     await batch.commit();
-    alert(`Registro actualizado. Nuevo monto: ${nuevoMonto} Bs`);
     cargarRegistros();
   }
 
@@ -317,38 +385,6 @@
               cargarRegistros();
           } catch (error) { console.error(error); }
       }
-  }
-
-  function toggleGestion() {
-    const panel = document.getElementById('gestionPanel');
-    panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
-    if (panel.style.display === 'block') cargarRegistros();
-  }
-
-  function cargarGestionPanel(registros, cartonesOrdenados) {
-    const tbodyGestion = document.querySelector('#gestionTabla tbody');
-    tbodyGestion.innerHTML = '';
-    cartonesOrdenados.forEach(c => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${c}</td><td>${registros[c]}</td><td>
-        <button class='edit-btn' onclick='editarNombre(${c})'>Editar</button>
-        <button class='delete-btn' onclick='eliminarCarton(${c})'>Eliminar</button>
-      </td>`;
-      tbodyGestion.appendChild(tr);
-    });
-  }
-
-  function editarNombre(carton) {
-    const nuevoNombre = prompt("Editar nombre para cartón " + carton + ":");
-    if (nuevoNombre && nuevoNombre.trim()) {
-      db.collection('registrosCartones').doc(carton.toString()).update({ nombre: nuevoNombre.trim() }).then(() => cargarRegistros());
-    }
-  }
-
-  function eliminarCarton(carton) {
-    if (confirm("¿Eliminar cartón " + carton + "?")) {
-      db.collection('registrosCartones').doc(carton.toString()).delete().then(() => cargarRegistros());
-    }
   }
 
   async function eliminarPago(pagoId, cartones) {
@@ -375,27 +411,46 @@
     } catch (error) { console.error(error); }
   }
 
+  function toggleGestion() {
+    const panel = document.getElementById('gestionPanel');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    if (panel.style.display === 'block') cargarRegistros();
+  }
+
   function copiarTablasAlPortapapeles() {
     function tablaAtexto(tabla) {
       let texto = '';
       const tbody = tabla.querySelector('tbody');
-      if (tbody) {
-        const bodyFilas = tbody.querySelectorAll('tr');
-        bodyFilas.forEach(fila => {
-          const celdas = fila.querySelectorAll('td');
-          const filaTexto = Array.from(celdas)
-            .filter((c, idx) => idx < celdas.length - 1)
-            .map(c => c.textContent.trim())
-            .join('\t');
-          if (filaTexto) texto += filaTexto + '\n';
-        });
-      }
+      if (!tbody) return texto;
+      const filas = tbody.querySelectorAll('tr');
+      filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        const filaTexto = Array.from(celdas)
+          .filter((c, idx) => idx < celdas.length - 1)
+          .map(c => c.textContent.trim())
+          .join('\t');
+        if (filaTexto) texto += filaTexto + '\n';
+      });
       return texto;
     }
+
+    const textoPagos = tablaAtexto(document.getElementById('tablaPagos'));
+    const textoApartados = tablaAtexto(document.getElementById('tablaApartados'));
     const textoCartones = tablaAtexto(document.getElementById('tablaCartones'));
-    navigator.clipboard.writeText(`== CARTONES VENDIDOS ==\n${textoCartones}`).then(() => alert('¡Tablas copiadas!'));
+
+        const finalTexto =
+      '== PAGOS CONFIRMADOS ==\n' +
+      textoPagos +
+      '\n== APARTADOS ==\n' +
+      textoApartados +
+      '\n== CARTONES VENDIDOS ==\n' +
+      textoCartones;
+
+    navigator.clipboard
+      .writeText(finalTexto)
+      .then(() => alert('¡Reporte copiado al portapapeles!'));
   }
-  
+
   document.addEventListener('DOMContentLoaded', () => {
     cargarRegistros();
     document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
@@ -407,7 +462,7 @@
 <body>
 <div class="content-wrapper">
     <header>
-      <h1>Registro de Cartones (500)</h1>
+      <h1>Registro de Cartones (630)</h1>
       <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
     </header>
 
@@ -415,40 +470,66 @@
       <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
       <button id="btnCopiar" class="copiar-btn">Copiar Reporte</button>
       <button id="btnBorrar" class="borrar-btn">Limpiar Base de Datos</button>
+      <button id="btnSubirBanco" class="gestion-btn">Subir Movimientos Bancarios</button>
+      <input type="file" id="inputBanco" accept=".xls,.xlsx" style="display:none;">
     </div>
 
     <div class="resumen" id="resumen"></div>
 
     <h2>Apartados y Pagos Pendientes</h2>
     <table id="tablaApartados">
-      <thead><tr><th>Monto (BS)</th><th>Referencia</th><th>Nombre</th><th>Números</th><th>Acciones</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Monto (BS)</th>
+          <th>Referencia</th>
+          <th>Nombre</th>
+          <th>Números</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <h2>Registro de Pagos Confirmados</h2>
     <table id="tablaPagos">
-      <thead><tr><th>Monto (BS)</th><th>Referencia</th><th>Nombre</th><th>Números</th><th>Acciones</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Monto (BS)</th>
+          <th>Referencia</th>
+          <th>Nombre</th>
+          <th>Números</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <h2>Lista de Jugadores</h2>
     <table id="tablaCartones">
       <caption>Cartón - Nombre</caption>
-      <thead><tr><th>Cartón</th><th>Nombre</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Cartón</th>
+          <th>Nombre</th>
+        </tr>
+      </thead>
       <tbody></tbody>
     </table>
 
     <div id="gestionPanel">
       <h2>Gestión de Cartones Vendidos</h2>
       <table id="gestionTabla">
-        <thead><tr><th>Cartón</th><th>Nombre</th><th>Acciones</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Cartón</th>
+            <th>Nombre</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
         <tbody></tbody>
       </table>
     </div>
-</div> 
+</div>
 </body>
 </html>
-
-
-
 
