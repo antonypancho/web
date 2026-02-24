@@ -134,11 +134,23 @@
     refInput.value = v.replace(/\D/g, "").slice(0, 6);
   });
 
-  // 🔥 COPIAR SOLO IMAGEN
+  // 🔥 COPIAR SOLO IMAGEN (SIN RECORTES)
   document.getElementById("copyImageBtn").onclick = async () => {
     const panel = document.getElementById("panel-cartones");
 
-    html2canvas(panel, { scale: 2 }).then(async canvas => {
+    // Clonar el panel para capturarlo completo
+    const clone = panel.cloneNode(true);
+    clone.style.position = "absolute";
+    clone.style.left = "-9999px";
+    clone.style.top = "0";
+    clone.style.width = panel.scrollWidth + "px";
+    clone.style.height = panel.scrollHeight + "px";
+
+    document.body.appendChild(clone);
+
+    html2canvas(clone, { scale: 2 }).then(async canvas => {
+      clone.remove();
+
       canvas.toBlob(async blob => {
         try {
           await navigator.clipboard.write([
