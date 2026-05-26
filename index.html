@@ -243,37 +243,62 @@ nombreInput.addEventListener("input", () => {
   const alertaNoDisponibles = document.getElementById('alertaNoDisponibles');
   const copiarNoDisponiblesBtn = document.getElementById('copiarNoDisponiblesBtn');
 
-  seleccionadosInput.oninput = function() {
-    const nums = this.value.match(/\d+/g) || [];
-    const nuevoSeleccionados = new Set();
-    const noDisponibles = [];
+ seleccionadosInput.oninput = function () {
+  const texto = this.value;
+  const nuevoSeleccionados = new Set();
+  const noDisponibles = [];
 
-    nums.forEach(str => {
-      const n = parseInt(str);
-      if (n >= 1 && n <= TOTAL_CARTONES) {
-        if (!vendidos.has(n)) nuevoSeleccionados.add(n);
-        else noDisponibles.push(n);
+  // Acepta: 22-25, 22/25, 22 25, 22,25, saltos de línea, etc.
+  const partes = texto
+    .replace(/\n/g, " ")
+    .split(/[\s,]+/)
+    .filter(p => p.trim() !== "");
+
+  partes.forEach(parte => {
+    // Rango tipo 22-25 o 22/25
+    const rangoMatch = parte.match(/^(\d+)\s*[-/]\s*(\d+)$/);
+    if (rangoMatch) {
+      let inicio = parseInt(rangoMatch[1]);
+      let fin = parseInt(rangoMatch[2]);
+      if (inicio > fin) [inicio, fin] = [fin, inicio];
+      for (let n = inicio; n <= fin; n++) {
+        if (n >= 1 && n <= TOTAL_CARTONES) {
+          if (!vendidos.has(n)) nuevoSeleccionados.add(n);
+          else noDisponibles.push(n);
+        }
       }
-    });
-
-    seleccionados = nuevoSeleccionados;
-    this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
-
-    actualizarVisualTablero();
-    actualizarTotales();
-
-    if (noDisponibles.length > 0) {
-      alertaNoDisponibles.innerHTML = `<div style="color:#ff5252;">No disponibles: <b>${noDisponibles.join(", ")}</b></div>`;
-      copiarNoDisponiblesBtn.style.display = "block";
-      copiarNoDisponiblesBtn.onclick = () => {
-        navigator.clipboard.writeText("No disponibles: " + noDisponibles.join(", "));
-        alert("Copiado");
-      };
     } else {
-      alertaNoDisponibles.innerHTML = "";
-      copiarNoDisponiblesBtn.style.display = "none";
+      // Número suelto
+      const numMatch = parte.match(/^\d+$/);
+      if (numMatch) {
+        const n = parseInt(numMatch[0]);
+        if (n >= 1 && n <= TOTAL_CARTONES) {
+          if (!vendidos.has(n)) nuevoSeleccionados.add(n);
+          else noDisponibles.push(n);
+        }
+      }
     }
-  };
+  });
+
+  seleccionados = nuevoSeleccionados;
+  this.value = Array.from(seleccionados).sort((a, b) => a - b).join(", ");
+
+  actualizarVisualTablero();
+  actualizarTotales();
+
+  if (noDisponibles.length > 0) {
+    alertaNoDisponibles.innerHTML =
+      `<div style="color:#ff5252;">No disponibles: <b>${noDisponibles.join(", ")}</b></div>`;
+    copiarNoDisponiblesBtn.style.display = "block";
+    copiarNoDisponiblesBtn.onclick = () => {
+      navigator.clipboard.writeText("No disponibles: " + noDisponibles.join(", "));
+      alert("Copiado");
+    };
+  } else {
+    alertaNoDisponibles.innerHTML = "";
+    copiarNoDisponiblesBtn.style.display = "none";
+  }
+};
 
   /* 🔥 AZAR */
   document.getElementById("azarBtn").onclick = () => {
