@@ -1,46 +1,175 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Bingo Mágico - Venta de Cartones</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Registro de Compras - Sora Cartones</title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@900&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
 
-  <!-- html2canvas para copiar imagen -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  * { box-sizing: border-box; }
+  
+  body { 
+      background: linear-gradient(135deg, #0b021a 0%, #121212 100%); 
+      color: #f0f0f0; 
+      font-family: 'Nunito', Arial, sans-serif; 
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+  }
 
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #0b021a 0%, #121212 100%);
-      color: #f0f0f0; font-family: 'Nunito', sans-serif;
-      margin: 0; padding: 20px; min-height: 100vh;
-    }
-    .header { display: flex; flex-direction: column; align-items: center; position: relative; gap: 10px; margin-bottom: 30px; }
-    .logo-mago { font-size: 50px; } 
-    h1 { color: #ffffff; text-shadow: 0 0 15px rgba(255,255,255,0.4); font-size: 2.2em; margin: 0; }
-    .registro-nav-btn { background-color: #37474F; color: #fdd835; border: 1px solid #fdd835; padding: 8px 16px; border-radius: 8px; font-weight: 900; cursor: pointer; }
-    form { max-width: 600px; margin: 0 auto 30px auto; background: rgba(255,255,255,0.05); padding: 25px; border-radius: 20px; border: 1px solid #333; }
-    label { display: block; margin-top: 15px; margin-bottom: 5px; font-weight: bold; color: #fdd835; }
-    input { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #444; background: #1e1e1e; color: #fff; font-weight: 900; font-size: 1.2em; }
-    input#monto { background-color: #000; color: #fdd835; text-align: center; font-size: 1.8em; border-color: #fdd835; }
-    button[type="submit"] { margin-top: 25px; width: 100%; padding: 18px; background: linear-gradient(45deg, #fdd835, #fbc02d); border: none; border-radius: 10px; font-weight: 900; font-size: 1.4em; cursor: pointer; }
-    #copyImageBtn { max-width: 600px; display: block; margin: 15px auto; background: linear-gradient(45deg, #00c853, #64dd17); color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer; font-weight: 900; width: 100%; box-shadow: 0 4px 15px rgba(0,200,83,0.3); }
-    .tabla-scroll { width: 100%; overflow-x: auto; margin-top: 30px; padding-bottom: 15px; }
-    #panel-cartones { display: grid; grid-template-columns: repeat(20, 1fr); gap: 3px; background-color: #ffffff; padding: 10px; border-radius: 10px; min-width: 1400px; margin: 0 auto; }
-    .carton-btn { aspect-ratio: 1/1; background: #fff; border: 1px solid #eee; color: #000; font-weight: 900; font-size: 2.2em; cursor: pointer; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
-    .carton-btn.selected { background-color: #fdd835; border-color: #000; transform: scale(1.1); z-index: 5; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
-    .carton-btn.vendido { opacity: 0.03; pointer-events: none; }
-  </style>
+  .content-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+  }
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+  header { 
+      display: flex; 
+      justify-content: space-between;
+      align-items: center; 
+      gap: 20px; 
+      margin-bottom: 30px; 
+      border-bottom: 1px solid #333;
+      padding-bottom: 20px;
+  }
+  
+  h1, h2 { 
+      margin: 0; 
+      color: #ffffff;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
 
-  <script>
-    const firebaseConfig = {
+  h2 {
+      margin-top: 40px;
+      margin-bottom: 15px;
+      text-align: center;
+      font-size: 1.8em;
+  }
+
+  .button-bar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 30px;
+  }
+  
+  button.volver-btn, button.borrar-btn, button.gestion-btn, button.copiar-btn {
+      border: none; 
+      color: white; 
+      font-weight: bold;
+      padding: 10px 20px; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      font-size: 1em;
+      font-family: 'Nunito', Arial, sans-serif;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  }
+  
+  button.volver-btn, button.gestion-btn { background-color: #37474F; }
+  button.volver-btn:hover, button.gestion-btn:hover { 
+      background-color: #546E7A;
+      transform: translateY(-2px);
+  }
+  
+  button.copiar-btn { background: linear-gradient(45deg, #4CAF50, #8BC34A); }
+  button.copiar-btn:hover { 
+      background: linear-gradient(45deg, #8BC34A, #689F38);
+      transform: translateY(-2px);
+  }
+
+  button.borrar-btn { background-color: #e53935; }
+  button.borrar-btn:hover { background-color: #c62828; }
+
+  #btnSubirBanco {
+      background-color: #4CAF50;
+  }
+  #btnSubirBanco:hover {
+      background-color: #66BB6A;
+      transform: translateY(-2px);
+  }
+
+  .referencia-duplicada { color: #ffeb3b !important; font-weight: 900; }
+  .referencia-verificada { color: #00e676 !important; font-weight: 900; }
+  
+  .resumen { 
+      text-align: center; 
+      margin-bottom: 40px; 
+      font-size: 1.1em;
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 25px;
+  }
+  .resumen b { color: #fdd835; }
+  .resumen b.apartado-count { color: #2196f3; }
+
+  table { 
+      width: 100%; 
+      border-collapse: separate;
+      border-spacing: 0;
+      margin-bottom: 40px; 
+      background: #1e1e1e;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid #333;
+  }
+  
+  #tablaApartados { border: 1px solid #2196f3; }
+  #tablaApartados caption { background: #1A237E; }
+
+  caption { 
+      font-weight: 700; 
+      font-size: 1.3em; 
+      padding: 15px; 
+      background: #2a2a2a;
+      color: #f0f0f0;
+      text-align: left;
+  }
+  
+  th, td { 
+      border-bottom: 1px solid #333; 
+      padding: 12px 15px; 
+      text-align: left; 
+      color: #ccc;
+  }
+  th { background: #252525; color: #fff; }
+
+  .carton-pendiente { color: #fdd835; font-weight: 700; margin-left: 8px; }
+
+  #gestionPanel { 
+      display: none; 
+      background: #1e1e1e; 
+      padding: 20px; 
+      border-radius: 12px; 
+      max-height: 500px; 
+      overflow-y: auto; 
+      margin-bottom: 30px; 
+      border: 1px solid #333;
+  }
+  
+  .edit-btn { background: #2196f3; color: white; padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; margin-right: 4px; }
+  .delete-btn { background: #e53935; color: white; padding: 4px 10px; border-radius: 4px; border: none; cursor: pointer; }
+</style>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  /* 🔥 CONFIG DINÁMICA */
+  let PRECIO_CARTON = parseInt(localStorage.getItem("precioCarton")) || 300;
+  let TOTAL_CARTONES = parseInt(localStorage.getItem("totalCartones")) || 510;
+
+  const firebaseConfig = {
       apiKey: "AIzaSyCJXV1uIO7k-mskXmLeTLRzH0JmBW6Bkm4",
       authDomain: "bingomagic.firebaseapp.com",
       projectId: "bingomagic",
@@ -49,278 +178,417 @@
       appId: "1:239927101364:web:7557e068b2564c63a194e1",
       measurementId: "G-0GJL6DJCEB"
     };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-  </script>
-</head>
-<body>
 
-<div class="header">
-  <div class="logo-mago">🧙‍♀️</div> 
-  <h1>✨ BINGO MAGIC SORA (530)</h1>
-  <button class="registro-nav-btn" onclick="window.location.href='registro.html'">Ver Registros</button>
-</div>
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
 
-<form id="compraForm">
+  function esReferenciaNumerica(referencia) {
+      if (!referencia) return false;
+      return /^\d+$/.test(referencia.trim());
+  }
 
-  <label>Nombre del Jugador:</label>
-  <input type="text" id="nombre" required placeholder="Nombre del cliente" />
-
-  <label>Cartones (Escribe 22-23, 22/23, 22 23 o pega lista):</label>
-  <input type="text" id="cartonesSeleccionados" placeholder="Cualquier separador funciona" autocomplete="off" />
-
-  <div id="alertaNoDisponibles" style="margin-top:10px; font-size:1.1em;"></div>
-
-  <button id="copiarNoDisponiblesBtn" type="button"
-    style="margin-top:10px; width:100%; padding:12px; border:none; border-radius:10px;
-    background:#e53935; color:white; font-weight:900; cursor:pointer; display:none;">
-    Copiar No Disponibles
-  </button>
-
-  <!-- 🔥 BOTÓN AZAR SEGURO -->
-  <button id="azarBtn" type="button"
-    style="margin-top:10px; width:100%; padding:12px; border:none; border-radius:10px;
-    background:#2196F3; color:white; font-weight:900; cursor:pointer;">
-    +1 AZAR
-  </button>
-
-  <label>Cartones Pendientes:</label>
-  <input type="number" id="pendientes" value="0" min="0" />
-
-  <label>Referencia de Pago:</label>
-  <input type="text" id="referencia" required maxlength="6" placeholder="6 dígitos o P" />
-
-  <label>Monto Total (Bs):</label>
-  <input type="text" id="monto" readonly value="0" />
-
-  <button type="submit" id="comprarBtn">REGISTRAR COMPRA</button>
-</form>
-
-<button id="copyImageBtn">📸 COPIAR TABLERO</button>
-
-<div class="tabla-scroll">
-  <div id="panel-cartones"></div>
-</div>
-
-<script>
-  const TOTAL_CARTONES = 510;
-  const PRECIO_CARTON = 300;
-  const panel = document.getElementById('panel-cartones');
-  const seleccionadosInput = document.getElementById('cartonesSeleccionados');
-  const montoInput = document.getElementById('monto');
-  const pendientesInput = document.getElementById('pendientes');
-  const refInput = document.getElementById("referencia");
-
-  let seleccionados = new Set();
-  let vendidos = new Set();
-
-  // 🔥 BLOQUEAR ENTER
-  document.querySelectorAll("input").forEach(input => {
-    input.addEventListener("keydown", e => {
-      if (e.key === "Enter") e.preventDefault();
-    });
+  document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("precioActual").textContent = PRECIO_CARTON;
+      document.getElementById("totalActual").textContent = TOTAL_CARTONES;
+      document.getElementById("totalActualHeader").textContent = TOTAL_CARTONES;
   });
 
-  // 🔥 VALIDAR REFERENCIA (6 números o P)
-  refInput.addEventListener("input", () => {
-    let v = refInput.value.toUpperCase();
+  async function cargarRegistros() {
+    let registros = {};
+    let totalMonto = 0;
+    let totalPendientes = 0; 
+    let totalApartados = 0;
 
-    if (v === "P") {
-      refInput.value = "P";
-      return;
+    const referencias = {};
+    const duplicadas = new Set();
+
+    /* 🔥 LISTA DE JUGADORES */
+    db.collection('registrosCartones').onSnapshot(snapshotCartones => {
+        registros = {};
+        snapshotCartones.forEach(doc => {
+            registros[doc.id] = doc.data().nombre;
+        });
+        actualizarTablaJugadores(registros);
+    });
+
+    const snapshotPagos = await db.collection('registrosPagos').orderBy('timestamp', 'desc').get();
+
+    /* 🔥 DETECTAR DUPLICADOS DE REFERENCIA */
+    snapshotPagos.forEach(doc => {
+        const ref = doc.data().referencia;
+        if (!referencias[ref]) referencias[ref] = 0;
+        referencias[ref]++;
+        if (referencias[ref] === 2) duplicadas.add(ref);
+    });
+
+    const tbodyPagos = document.querySelector('#tablaPagos tbody');
+    const tbodyApartados = document.querySelector('#tablaApartados tbody');
+    tbodyPagos.innerHTML = '';
+    tbodyApartados.innerHTML = '';
+
+    /* 🔥 DETECTOR DE CARTONES DUPLICADOS ENTRE PAGOS/APARTADOS */
+    const contadorCartones = {};
+
+    snapshotPagos.forEach(doc => {
+        const data = doc.data();
+        const lista = data.cartones || [];
+
+        lista.forEach(n => {
+            if (!contadorCartones[n]) contadorCartones[n] = [];
+            contadorCartones[n].push(data.nombre || "SIN NOMBRE");
+        });
+    });
+
+    const duplicadosCartones = Object.keys(contadorCartones)
+        .filter(n => contadorCartones[n].length > 1);
+
+    if (duplicadosCartones.length > 0) {
+        let mensaje = "⚠️ CARTONES DUPLICADOS DETECTADOS:\n\n";
+        duplicadosCartones.forEach(n => {
+            mensaje += `• Cartón ${n} vendido a: ${contadorCartones[n].join(", ")}\n`;
+        });
+        alert(mensaje);
     }
 
-    refInput.value = v.replace(/\D/g, "").slice(0, 6);
-  });
+    /* 🔥 RENDER DE TABLAS */
+    snapshotPagos.forEach(doc => {
+      const data = doc.data();
+      const ref = data.referencia;
+      const esNum = esReferenciaNumerica(ref);
+      const esDuplicada = duplicadas.has(ref);
 
-  // 🔥 COPIAR SOLO IMAGEN (SIN RECORTES)
-  document.getElementById("copyImageBtn").onclick = async () => {
-    const panel = document.getElementById("panel-cartones");
+      if (!esNum) totalApartados++;
 
-    // Clonar el panel para capturarlo completo
-    const clone = panel.cloneNode(true);
-    clone.style.position = "absolute";
-    clone.style.left = "-9999px";
-    clone.style.top = "0";
-    clone.style.width = panel.scrollWidth + "px";
-    clone.style.height = panel.scrollHeight + "px";
+      totalMonto += parseFloat(data.monto);
 
-    document.body.appendChild(clone);
+      const cartonesStr = (data.cartones?.length > 0) ? data.cartones.join(", ") : "";
+      const numPendientes = data.pendientes || 0;
+      totalPendientes += numPendientes;
 
-    html2canvas(clone, { scale: 2 }).then(async canvas => {
-      clone.remove();
+      const pendienteStr = numPendientes > 0 ? `<span class="carton-pendiente">(+${numPendientes} pnd)</span>` : "";
+      const celdaCartones = (cartonesStr + pendienteStr).trim() || "-";
 
-      canvas.toBlob(async blob => {
-        try {
-          await navigator.clipboard.write([
-            new ClipboardItem({ "image/png": blob })
-          ]);
-          alert("Imagen copiada al portapapeles");
-        } catch (err) {
-          alert("Tu navegador no permite copiar imágenes directamente.");
-        }
-      });
-    });
-  };
+      const referenciaHTML = `
+        <td class="${esDuplicada ? 'referencia-duplicada' : ''}">
+          ${ref}${esDuplicada ? ' (D)' : ''}
+        </td>
+      `;
 
-  // 🔥 BLOQUEAR SUBMIT ACCIDENTAL DESDE AZAR
-  document.getElementById("azarBtn").addEventListener("click", e => {
-    e.preventDefault();
-    e.stopPropagation();
-  });
+      const botones = `
+        <button class='edit-btn' onclick='editarPago("${doc.id}", ${JSON.stringify(data.cartones || [])}, ${numPendientes})'>Editar</button>
+        <button class='delete-btn' onclick='eliminarPago("${doc.id}", ${JSON.stringify(data.cartones || [])})'>Eliminar</button>
+      `;
 
-  async function cargarVendidos() {
-    db.collection('registrosCartones').onSnapshot(snap => {
-      vendidos.clear();
-      snap.forEach(doc => vendidos.add(parseInt(doc.id)));
-      actualizarVisualTablero();
-    });
-  }
+      const tr = document.createElement('tr');
 
-  function actualizarVisualTablero() {
-    document.querySelectorAll('.carton-btn').forEach(btn => {
-      const n = parseInt(btn.dataset.numero);
-      btn.classList.toggle('vendido', vendidos.has(n));
-      btn.classList.toggle('selected', seleccionados.has(n));
-    });
-  }
-
-  // Generar Tablero
-  for (let i = 1; i <= TOTAL_CARTONES; i++) {
-    const btn = document.createElement('button');
-    btn.className = 'carton-btn';
-    btn.textContent = i;
-    btn.dataset.numero = i;
-    btn.type = "button";
-    btn.onclick = () => {
-      if (vendidos.has(i)) return;
-      if (seleccionados.has(i)) seleccionados.delete(i);
-      else seleccionados.add(i);
-      actualizarInputDesdeSeleccion();
-    };
-    panel.appendChild(btn);
-  }
-
-  function actualizarInputDesdeSeleccion() {
-    seleccionadosInput.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
-    actualizarVisualTablero();
-    actualizarTotales();
-  }
-
-  // --- NO DISPONIBLES ---
-  const alertaNoDisponibles = document.getElementById('alertaNoDisponibles');
-  const copiarNoDisponiblesBtn = document.getElementById('copiarNoDisponiblesBtn');
-
-  seleccionadosInput.oninput = function() {
-    const nums = this.value.match(/\d+/g) || [];
-    const nuevoSeleccionados = new Set();
-    const noDisponibles = [];
-
-    nums.forEach(str => {
-      const n = parseInt(str);
-      if (n >= 1 && n <= TOTAL_CARTONES) {
-        if (!vendidos.has(n)) nuevoSeleccionados.add(n);
-        else noDisponibles.push(n);
+      if (esNum) {
+        tr.innerHTML = `
+          <td>${data.monto}</td>
+          ${referenciaHTML}
+          <td>${data.nombre || "-"}</td>
+          <td>${celdaCartones}</td>
+          <td>${botones}</td>
+        `;
+        tbodyPagos.appendChild(tr);
+      } else {
+        tr.innerHTML = `
+          <td>${data.monto}</td>
+          ${referenciaHTML}
+          <td>${data.nombre || "-"}</td>
+          <td>${celdaCartones}</td>
+          <td>
+            <button class='edit-btn' style='background:#607D8B' onclick='editarApartadoReferencia("${doc.id}", "${ref}")'>Ref</button>
+            ${botones}
+          </td>
+        `;
+        tbodyApartados.appendChild(tr);
       }
     });
 
-    seleccionados = nuevoSeleccionados;
-    this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
+    document.getElementById('resumen').innerHTML = `
+      <span>Vendidos: <b>${Object.keys(registros).length}</b></span>
+      <span>Faltantes: <b>${TOTAL_CARTONES - Object.keys(registros).length}</b></span>
+      ${totalPendientes > 0 ? `<span>Pendientes: <b>${totalPendientes}</b></span>` : ''}
+      ${totalApartados > 0 ? `<span>Apartados: <b class="apartado-count">${totalApartados}</b></span>` : ''}
+      <span>Monto total: <b>${totalMonto} Bs</b></span>
+    `;
+  }
 
-    actualizarVisualTablero();
-    actualizarTotales();
+  function actualizarTablaJugadores(registros) {
+    const tbody = document.querySelector('#tablaCartones tbody');
+    tbody.innerHTML = "";
 
-    if (noDisponibles.length > 0) {
-      alertaNoDisponibles.innerHTML = `
-        <div style="color:#ff5252;">
-          No disponibles: <b>${noDisponibles.join(", ")}</b>
-        </div>
-      `;
-      copiarNoDisponiblesBtn.style.display = "block";
+    const cartonesOrdenados = Object.keys(registros).map(Number).sort((a,b)=>a-b);
 
-      copiarNoDisponiblesBtn.onclick = () => {
-        navigator.clipboard.writeText("No disponibles: " + noDisponibles.join(", "));
-        alert("Copiado al portapapeles");
+    cartonesOrdenados.forEach(c => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${c}</td>
+            <td>${registros[c]}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+  }
+
+  /* ✔️ VERIFICACIÓN BANCARIA */
+  document.addEventListener("DOMContentLoaded", () => {
+      const btnSubirBanco = document.getElementById("btnSubirBanco");
+      const inputBanco = document.getElementById("inputBanco");
+
+      btnSubirBanco.onclick = () => inputBanco.click();
+
+      inputBanco.onchange = async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const data = await file.arrayBuffer();
+          const workbook = XLSX.read(data);
+          const sheet = workbook.Sheets[workbook.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+          const referenciasBanco = new Set();
+
+          rows.forEach(row => {
+              if (!row || row.length < 2) return;
+
+              const ref = row[1]?.toString().trim();
+              if (!ref) return;
+
+              const match = ref.match(/(\d{6})$/);
+              if (match) referenciasBanco.add(match[1]);
+          });
+
+          const filas = document.querySelectorAll("#tablaPagos tbody tr");
+
+          filas.forEach(fila => {
+              const celdaRef = fila.children[1];
+              let referencia = celdaRef.textContent.replace("(D)", "").replace("✔️", "").trim();
+
+              const esDuplicada = celdaRef.textContent.includes("(D)");
+
+              if (referenciasBanco.has(referencia)) {
+                  celdaRef.classList.add("referencia-verificada");
+                  celdaRef.innerHTML = `${referencia}${esDuplicada ? ' (D)' : ''} ✔️`;
+              }
+          });
+
+          alert("Verificación completada.");
       };
 
-    } else {
-      alertaNoDisponibles.innerHTML = "";
-      copiarNoDisponiblesBtn.style.display = "none";
-    }
-  };
+      cargarRegistros();
+  });
 
-  // --- 🔥 BOTÓN AZAR ---
-  document.getElementById("azarBtn").onclick = () => {
+  async function editarPago(pagoId, cartonesActuales, pendientesActuales) {
+    const pagoDoc = await db.collection('registrosPagos').doc(pagoId).get();
+    const data = pagoDoc.data();
 
-    const disponibles = [];
-    for (let i = 1; i <= TOTAL_CARTONES; i++) {
-      if (!vendidos.has(i) && !seleccionados.has(i)) {
-        disponibles.push(i);
+    const nuevoTexto = prompt("Edita los cartones (separados por coma):", cartonesActuales.join(", "));
+    if (nuevoTexto === null) return; 
+
+    const nuevoPendienteTexto = prompt("Cantidad de pendientes:", pendientesActuales);
+    if (nuevoPendienteTexto === null) return; 
+
+    const nuevosCartones = nuevoTexto.split(",").map(s => parseInt(s.trim())).filter(n => !isNaN(n) && n >= 1 && n <= TOTAL_CARTONES);
+    const nuevosPendientes = parseInt(nuevoPendienteTexto) || 0;
+
+    const snapshot = await db.collection('registrosCartones').get();
+    const vendidos = new Set();
+    snapshot.forEach(doc => vendidos.add(parseInt(doc.id)));
+
+    for (let n of nuevosCartones) {
+      if (vendidos.has(n) && !cartonesActuales.includes(n)) {
+        alert(`El cartón ${n} ya está vendido.`);
+        return;
       }
     }
 
-    if (disponibles.length === 0) {
-      alert("No quedan cartones disponibles.");
-      return;
-    }
+    const nuevoMonto = (nuevosCartones.length + nuevosPendientes) * PRECIO_CARTON;
 
-    const random = disponibles[Math.floor(Math.random() * disponibles.length)];
+    const batch = db.batch();
+    cartonesActuales.forEach(n => { if (!nuevosCartones.includes(n)) batch.delete(db.collection('registrosCartones').doc(n.toString())); });
+    nuevosCartones.forEach(n => { if (!cartonesActuales.includes(n)) batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre: data.nombre }); });
+    
+    batch.update(db.collection('registrosPagos').doc(pagoId), { 
+        cartones: nuevosCartones, 
+        pendientes: nuevosPendientes,
+        monto: nuevoMonto.toString() 
+    });
 
-    seleccionados.add(random);
-    actualizarInputDesdeSeleccion();
-  };
-
-  function actualizarTotales() {
-    const p = parseInt(pendientesInput.value) || 0;
-    montoInput.value = (seleccionados.size + p) * PRECIO_CARTON;
+    await batch.commit();
+    cargarRegistros();
   }
-  pendientesInput.oninput = actualizarTotales;
 
-  // --- 🔥 REGISTRAR COMPRA ---
-  document.getElementById('compraForm').onsubmit = async e => {
-    e.preventDefault();
+  async function editarApartadoReferencia(pagoId, referenciaActual) {
+      const nuevaReferencia = prompt(`Editar la referencia para el apartado "${referenciaActual}":`, referenciaActual);
+      if (nuevaReferencia && nuevaReferencia.trim()) {
+          try {
+              await db.collection('registrosPagos').doc(pagoId).update({ referencia: nuevaReferencia.trim() });
+              cargarRegistros();
+          } catch (error) { console.error(error); }
+      }
+  }
 
-    const btn = document.getElementById('comprarBtn');
-    btn.disabled = true;
-
-    const ref = refInput.value;
-
-    if (!(ref === "P" || (ref.length === 6 && /^\d+$/.test(ref)))) {
-      alert("La referencia debe ser 6 números o la letra P.");
-      btn.disabled = false;
-      return;
-    }
-
+  async function eliminarPago(pagoId, cartones) {
+    if (!confirm("¿Deseas eliminar este pago y liberar los cartones?")) return;
     try {
       const batch = db.batch();
-      const nombre = document.getElementById('nombre').value;
+      cartones.forEach(n => { batch.delete(db.collection('registrosCartones').doc(n.toString())); });
+      batch.delete(db.collection('registrosPagos').doc(pagoId));
+      await batch.commit();
+      cargarRegistros();
+    } catch (error) { console.error(error); }
+  }
 
-      seleccionados.forEach(n => batch.set(db.collection('registrosCartones').doc(n.toString()), { nombre }));
+    async function borrarRegistros() {
+    if (!confirm("¿Borrar todos los registros definitivamente?")) return;
+    try {
+      const batch = db.batch();
 
-      batch.set(db.collection('registrosPagos').doc(), {
-        nombre,
-        monto: montoInput.value,
-        referencia: ref,
-        cartones: Array.from(seleccionados),
-        pendientes: parseInt(pendientesInput.value) || 0,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
+      const cartonesSnapshot = await db.collection('registrosCartones').get();
+      cartonesSnapshot.forEach(doc => batch.delete(doc.ref));
+
+      const pagosSnapshot = await db.collection('registrosPagos').get();
+      pagosSnapshot.forEach(doc => batch.delete(doc.ref));
 
       await batch.commit();
-      location.reload();
-
-    } catch (err) {
-      alert("Error");
-      btn.disabled = false;
+      cargarRegistros();
+    } catch (error) {
+      console.error(error);
     }
-  };
+  }
 
-  cargarVendidos();
+  function toggleGestion() {
+    const panel = document.getElementById('gestionPanel');
+    panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+    if (panel.style.display === 'block') cargarRegistros();
+  }
+
+  function copiarTablasAlPortapapeles() {
+    function tablaAtexto(tabla) {
+      let texto = '';
+      const tbody = tabla.querySelector('tbody');
+      if (!tbody) return texto;
+      const filas = tbody.querySelectorAll('tr');
+      filas.forEach(fila => {
+        const celdas = fila.querySelectorAll('td');
+        const filaTexto = Array.from(celdas)
+          .filter((c, idx) => idx < celdas.length - 1)
+          .map(c => c.textContent.trim())
+          .join('\t');
+        if (filaTexto) texto += filaTexto + '\n';
+      });
+      return texto;
+    }
+
+    const textoPagos = tablaAtexto(document.getElementById('tablaPagos'));
+    const textoApartados = tablaAtexto(document.getElementById('tablaApartados'));
+    const textoCartones = tablaAtexto(document.getElementById('tablaCartones'));
+
+    const finalTexto =
+      '== PAGOS CONFIRMADOS ==\n' +
+      textoPagos +
+      '\n== APARTADOS ==\n' +
+      textoApartados +
+      '\n== CARTONES VENDIDOS ==\n' +
+      textoCartones;
+
+    navigator.clipboard
+      .writeText(finalTexto)
+      .then(() => alert('¡Reporte copiado al portapapeles!'));
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    cargarRegistros();
+    document.getElementById('btnBorrar').addEventListener('click', borrarRegistros);
+    document.getElementById('btnGestion').addEventListener('click', toggleGestion);
+    document.getElementById('btnCopiar').addEventListener('click', copiarTablasAlPortapapeles);
+  });
 </script>
+</head>
+<body>
+<div class="content-wrapper">
+    <header>
+      <h1>Registro de Cartones (<span id="totalActualHeader">510</span>)</h1>
+      <button class="volver-btn" onclick="window.location.href='index.html'">Volver</button>
+    </header>
+
+    <!-- Indicador de configuración actual -->
+    <div id="configInfo" style="
+      text-align:center;
+      margin-bottom:20px;
+      padding:12px;
+      background:#1e1e1e;
+      border-radius:10px;
+      border:1px solid #333;
+      font-size:1.1em;
+    ">
+      <b>Precio actual:</b> <span id="precioActual"></span> Bs —
+      <b>Total cartones:</b> <span id="totalActual"></span>
+    </div>
+
+    <div class="button-bar">
+      <button id="btnGestion" class="gestion-btn">Gestionar Cartones</button>
+      <button id="btnCopiar" class="copiar-btn">Copiar Reporte</button>
+      <button id="btnBorrar" class="borrar-btn">Limpiar Base de Datos</button>
+      <button id="btnSubirBanco" class="gestion-btn">Subir Movimientos Bancarios</button>
+      <input type="file" id="inputBanco" accept=".xls,.xlsx" style="display:none;">
+    </div>
+
+    <div class="resumen" id="resumen"></div>
+
+    <h2>Apartados y Pagos Pendientes</h2>
+    <table id="tablaApartados">
+      <thead>
+        <tr>
+          <th>Monto (BS)</th>
+          <th>Referencia</th>
+          <th>Nombre</th>
+          <th>Números</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Registro de Pagos Confirmados</h2>
+    <table id="tablaPagos">
+      <thead>
+        <tr>
+          <th>Monto (BS)</th>
+          <th>Referencia</th>
+          <th>Nombre</th>
+          <th>Números</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <h2>Lista de Jugadores</h2>
+    <table id="tablaCartones">
+      <caption>Cartón - Nombre</caption>
+      <thead>
+        <tr>
+          <th>Cartón</th>
+          <th>Nombre</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="gestionPanel">
+      <h2>Gestión de Cartones Vendidos</h2>
+      <table id="gestionTabla">
+        <thead>
+          <tr>
+            <th>Cartón</th>
+            <th>Nombre</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+</div>
 </body>
 </html>
-
-
-
-
