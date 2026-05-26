@@ -245,14 +245,19 @@ nombreInput.addEventListener("input", () => {
 
  seleccionadosInput.oninput = function () {
   const texto = this.value;
+
   const nuevoSeleccionados = new Set();
   const noDisponibles = [];
 
-  // Acepta: 22-25, 22/25, 22 25, 22,25, saltos de línea, etc.
-  const partes = texto
-    .replace(/\n/g, " ")
-    .split(/[\s,]+/)
-    .filter(p => p.trim() !== "");
+  // 1. Normalizar texto: reemplazar puntos, dobles puntos, guiones raros, etc.
+  const limpio = texto
+    .replace(/[\.\·]+/g, " ")     // puntos → espacio
+    .replace(/[,]+/g, " ")        // comas → espacio
+    .replace(/\s+/g, " ")         // espacios múltiples → uno
+    .trim();
+
+  // 2. Separar por espacios
+  const partes = limpio.split(" ").filter(p => p !== "");
 
   partes.forEach(parte => {
     // Rango tipo 22-25 o 22/25
@@ -261,21 +266,23 @@ nombreInput.addEventListener("input", () => {
       let inicio = parseInt(rangoMatch[1]);
       let fin = parseInt(rangoMatch[2]);
       if (inicio > fin) [inicio, fin] = [fin, inicio];
+
       for (let n = inicio; n <= fin; n++) {
         if (n >= 1 && n <= TOTAL_CARTONES) {
           if (!vendidos.has(n)) nuevoSeleccionados.add(n);
           else noDisponibles.push(n);
         }
       }
-    } else {
-      // Número suelto
-      const numMatch = parte.match(/^\d+$/);
-      if (numMatch) {
-        const n = parseInt(numMatch[0]);
-        if (n >= 1 && n <= TOTAL_CARTONES) {
-          if (!vendidos.has(n)) nuevoSeleccionados.add(n);
-          else noDisponibles.push(n);
-        }
+      return;
+    }
+
+    // Número suelto (aunque venga de texto sucio)
+    const numMatch = parte.match(/\d+/);
+    if (numMatch) {
+      const n = parseInt(numMatch[0]);
+      if (n >= 1 && n <= TOTAL_CARTONES) {
+        if (!vendidos.has(n)) nuevoSeleccionados.add(n);
+        else noDisponibles.push(n);
       }
     }
   });
