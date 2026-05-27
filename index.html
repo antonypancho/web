@@ -243,49 +243,37 @@ nombreInput.addEventListener("input", () => {
   const alertaNoDisponibles = document.getElementById('alertaNoDisponibles');
   const copiarNoDisponiblesBtn = document.getElementById('copiarNoDisponiblesBtn');
 
- seleccionadosInput.oninput = function () {
-  const texto = this.value;
+  seleccionadosInput.oninput = function() {
+    const nums = this.value.match(/\d+/g) || [];
+    const nuevoSeleccionados = new Set();
+    const noDisponibles = [];
 
-  const nuevoSeleccionados = new Set();
-  const noDisponibles = [];
-
-  // 1. Normalizar texto: reemplazar puntos, dobles puntos, guiones raros, etc.
-  const limpio = texto
-    .replace(/[\.\·]+/g, " ")     // puntos → espacio
-    .replace(/[,]+/g, " ")        // comas → espacio
-    .replace(/\s+/g, " ")         // espacios múltiples → uno
-    .trim();
-
-  // 2. Separar por espacios
-  const partes = limpio.split(" ").filter(p => p !== "");
-
-  partes.forEach(parte => {
-    // Rango tipo 22-25 o 22/25
-    const rangoMatch = parte.match(/^(\d+)\s*[-/]\s*(\d+)$/);
-    if (rangoMatch) {
-      let inicio = parseInt(rangoMatch[1]);
-      let fin = parseInt(rangoMatch[2]);
-      if (inicio > fin) [inicio, fin] = [fin, inicio];
-
-      for (let n = inicio; n <= fin; n++) {
-        if (n >= 1 && n <= TOTAL_CARTONES) {
-          if (!vendidos.has(n)) nuevoSeleccionados.add(n);
-          else noDisponibles.push(n);
-        }
-      }
-      return;
-    }
-
-    // Número suelto (aunque venga de texto sucio)
-    const numMatch = parte.match(/\d+/);
-    if (numMatch) {
-      const n = parseInt(numMatch[0]);
+    nums.forEach(str => {
+      const n = parseInt(str);
       if (n >= 1 && n <= TOTAL_CARTONES) {
         if (!vendidos.has(n)) nuevoSeleccionados.add(n);
         else noDisponibles.push(n);
       }
+    });
+
+    seleccionados = nuevoSeleccionados;
+    this.value = Array.from(seleccionados).sort((a,b)=>a-b).join(', ');
+
+    actualizarVisualTablero();
+    actualizarTotales();
+
+    if (noDisponibles.length > 0) {
+      alertaNoDisponibles.innerHTML = `<div style="color:#ff5252;">No disponibles: <b>${noDisponibles.join(", ")}</b></div>`;
+      copiarNoDisponiblesBtn.style.display = "block";
+      copiarNoDisponiblesBtn.onclick = () => {
+        navigator.clipboard.writeText("No disponibles: " + noDisponibles.join(", "));
+        alert("Copiado");
+      };
+    } else {
+      alertaNoDisponibles.innerHTML = "";
+      copiarNoDisponiblesBtn.style.display = "none";
     }
-  });
+  };
 
   seleccionados = nuevoSeleccionados;
   this.value = Array.from(seleccionados).sort((a, b) => a - b).join(", ");
