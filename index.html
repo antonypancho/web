@@ -162,14 +162,6 @@
     });
   });
 
-  const nombreInput = document.getElementById("nombre");
-
-nombreInput.addEventListener("input", () => {
-  // Permite solo letras (A-Z, a-z) y espacios
-  nombreInput.value = nombreInput.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ ]/g, "");
-});
-
-
   refInput.addEventListener("input", () => {
     let v = refInput.value.toUpperCase();
     if (v === "P") return refInput.value = "P";
@@ -274,26 +266,6 @@ nombreInput.addEventListener("input", () => {
       copiarNoDisponiblesBtn.style.display = "none";
     }
   };
-
-  seleccionados = nuevoSeleccionados;
-  this.value = Array.from(seleccionados).sort((a, b) => a - b).join(", ");
-
-  actualizarVisualTablero();
-  actualizarTotales();
-
-  if (noDisponibles.length > 0) {
-    alertaNoDisponibles.innerHTML =
-      `<div style="color:#ff5252;">No disponibles: <b>${noDisponibles.join(", ")}</b></div>`;
-    copiarNoDisponiblesBtn.style.display = "block";
-    copiarNoDisponiblesBtn.onclick = () => {
-      navigator.clipboard.writeText("No disponibles: " + noDisponibles.join(", "));
-      alert("Copiado");
-    };
-  } else {
-    alertaNoDisponibles.innerHTML = "";
-    copiarNoDisponiblesBtn.style.display = "none";
-  }
-};
 
   /* 🔥 AZAR */
   document.getElementById("azarBtn").onclick = () => {
